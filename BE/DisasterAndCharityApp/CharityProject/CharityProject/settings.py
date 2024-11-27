@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'CharityApp',
     'oauth2_provider',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -74,16 +75,20 @@ WSGI_APPLICATION = 'CharityProject.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+#Oauth2 Secret sqlite3: PRY4u5RoiR0qJb681BiDWiI7TGf52b6TtYctGyEWTZxBfLlFRRkh5j9WJgyqYJ9LtZNoyOoBAPQuHjH3GqIfhAmXoRpWo7HkfHPnH9H2WY7Fxgv7TqtRD4ogPm1LMo64
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'charity_db',
-        'USER': 'root',
-        'PASSWORD': 'PandaPhat2003@',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'charity_db',
+    #     'USER': 'root',
+    #     'PASSWORD': 'PandaPhat2003@',
+    #     'HOST': 'localhost',
+    #     'PORT': '3306',
+    # }
 }
 
 AUTH_USER_MODEL = "CharityApp.User"

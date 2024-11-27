@@ -58,6 +58,8 @@ class Admin (models.Model):
 class CharityOrg (models.Model):
     user_info = models.OneToOneField(User,related_name="charity_org_info",on_delete=models.CASCADE, primary_key=True, null=False)
     is_verified = models.BooleanField(default=False)
+    civilian_id = models.CharField(max_length=15)
+    civilian_id_date = models.DateField()
     badge = models.ForeignKey('Badge', related_name='orgs', on_delete=models.SET_NULL, null=True)
 
 class Chat (BaseModel):
@@ -123,6 +125,7 @@ class LocationStatus (BaseModel):
     current_status = enum.EnumField(LocationState, default=LocationState.NORMAL)
 
 class StatInfo (BaseModel):
-    status = models.ForeignKey(LocationStatus, related_name='stat_info', on_delete=models.CASCADE)
+    location = models.ForeignKey(LocationStatus, related_name='stat_history', on_delete=models.CASCADE)
+    status = enum.EnumField(LocationState, default=LocationState.NORMAL)
     label = models.CharField(max_length=40)
     number = models.FloatField()

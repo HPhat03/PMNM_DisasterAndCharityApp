@@ -21,4 +21,5 @@ from oauth2_provider import urls
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('o/', include(urls)),
+    path('', include("CharityApp.urls")),
 ]
