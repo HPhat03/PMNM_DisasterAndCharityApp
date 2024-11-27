@@ -73,6 +73,7 @@ class Badge (BaseModel):
 
 class DonationCampaign (BaseModel):
     org = models.ForeignKey(CharityOrg, on_delete=models.CASCADE, null=False, related_name="campaign")
+    title = models.CharField(max_length=50, default="ABC")
     content = models.TextField()
     expected_fund = models.IntegerField()
     expected_charity_start_date = models.DateField()
@@ -89,6 +90,8 @@ class ContentPicture (BaseModel):
 class Approval (models.Model):
     admin = models.ForeignKey(Admin, on_delete=models.CASCADE, related_name= 'approvals')
     donation = models.OneToOneField(DonationCampaign, on_delete=models.CASCADE, primary_key=True)
+    time_id = models.IntegerField(null=False, default=1)
+    is_approved = models.BooleanField(null=False)
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
     active = models.BooleanField(default=True)

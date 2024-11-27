@@ -28,12 +28,19 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
 #Custom
 class UserSerializer(DynamicFieldsModelSerializer):
     class Meta:
-        model = User;
+        model = User
         fields = "__all__"
 
     @transaction.atomic
     def create(self, validated_data):
         with transaction.atomic():
+            other = {}
+            if('civilian_id' in validated_data.keys()):
+                other['civilian_id'] = validated_data.pop('civilian_id')
+
+            if('civilian_id_date' in validated_data.keys()):
+                other['civilian_id_date'] = validated_data.pop('civilian_id_date')
+
             user = User(**validated_data)
             user.set_password(validated_data['password'])
             user.role = UserRole.CIVILIAN if 'role' not in validated_data.keys() else validated_data['role']
@@ -43,19 +50,24 @@ class UserSerializer(DynamicFieldsModelSerializer):
                     info = Civilian(user_info = user)
                     info.save()
                 case UserRole.CHARITY_ORG:
-                    info = CharityOrg(user_ifo = user, civilian_id = validated_data['civilian_id'], civilian_id_date = validated_data['civilian_id_date'])
+                    info = CharityOrg(user_info = user, civilian_id = other['civilian_id'], civilian_id_date = other['civilian_id_date'])
                     info.save()
             return user
         return None
 
 class CivilianFromUserSerializer(DynamicFieldsModelSerializer):
     class Meta:
-        model = Civilian;
+        model = Civilian
         # fields = "__all__"
         exclude = ('user_info',)
 
 class CharityOrgFromUserSerializer(DynamicFieldsModelSerializer):
     class Meta:
-        model = CharityOrg;
+        model = CharityOrg
         # fields = "__all__"
         exclude = ('user_info',)
+
+class CampagnSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = DonationCampaign
+        fields = "__all__"
