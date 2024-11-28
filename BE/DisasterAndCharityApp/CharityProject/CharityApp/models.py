@@ -80,7 +80,17 @@ class DonationCampaign (BaseModel):
     expected_charity_end_date = models.DateField()
     current_fund = models.IntegerField(default=0)
     is_permitted = models.BooleanField(default=False)
-    enclosed_article = models.ManyToManyField('Article', related_name='articles')
+    enclosed_article = models.ManyToManyField('Article', related_name='enclosed')
+
+class DonationReport(BaseModel):
+    donation = models.ForeignKey(DonationCampaign, on_delete=models.CASCADE)
+    total_used = models.IntegerField()
+    total_left = models.IntegerField(default=0)
+
+class DetailDonationReport(BaseModel):
+    report = models.OneToOneField(DonationReport, related_name="details", on_delete=models.CASCADE)
+    paid_for = models.CharField(max_length=100)
+    paid = models.IntegerField()
 
 class ContentPicture (BaseModel):
     donation = models.ForeignKey(DonationCampaign, on_delete=models.CASCADE, null=False, related_name="pictures")
@@ -98,7 +108,7 @@ class Approval (models.Model):
 
 class Confimation (models.Model):
     admin = models.ForeignKey(Admin, on_delete=models.CASCADE, related_name='confirmed')
-    donation = models.OneToOneField(DonationCampaign, on_delete=models.CASCADE, primary_key=True)
+    report = models.OneToOneField(DonationReport, on_delete=models.CASCADE, primary_key=True)
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
     active = models.BooleanField(default=True)

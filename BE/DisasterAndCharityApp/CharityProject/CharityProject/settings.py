@@ -57,7 +57,7 @@ ROOT_URLCONF = 'CharityProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,7 +75,8 @@ WSGI_APPLICATION = 'CharityProject.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-#Oauth2 Secret sqlite3: PRY4u5RoiR0qJb681BiDWiI7TGf52b6TtYctGyEWTZxBfLlFRRkh5j9WJgyqYJ9LtZNoyOoBAPQuHjH3GqIfhAmXoRpWo7HkfHPnH9H2WY7Fxgv7TqtRD4ogPm1LMo64
+# Oauth2 Secret sqlite3: POUOfttsyIDg0NBRg1D2VZEw2IYVdXDdhIQqwLmjqvhiQ2VqWyXjDMavmg4VpoIYsWIB8bCxO4NY4OefV4HhBGsliH86P4ulTiInW4wMG91MYRCoXB1C9M4RuAwAG3aV
+# Oauth2 ID: 634POpM5S6PTDpZRgsCHG2cfnvRDgnyCH7c5sF0n
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
