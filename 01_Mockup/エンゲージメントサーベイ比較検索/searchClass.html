@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0063)http://172.16.0.168/FLM9T/common/init-select-class/selectType/1 -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja" class=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="x-ua-compatible" content="ie=edge,chrome=1">
+<link rel="shortcut icon" href="http://172.16.0.168/favicon.ico">
+<link rel="stylesheet" type="text/css" charset="UTF-8" media="all" href="./_ KnowledgeC@fe (localhost.localdomain)_files/kc-ad-import.css">
+<script type="text/javascript" charset="UTF-8" src="./_ KnowledgeC@fe (localhost.localdomain)_files/import.js.download"></script><script type="text/javascript" src="./_ KnowledgeC@fe (localhost.localdomain)_files/jquery-3.4.1.min.js.download"></script><script type="text/javascript" src="./_ KnowledgeC@fe (localhost.localdomain)_files/jquery-ui.min.js.download"></script><script type="text/javascript" src="./_ KnowledgeC@fe (localhost.localdomain)_files/jquery.fancybox.pack.js.download"></script><link rel="stylesheet" type="text/css" charset="UTF-8" media="all" href="./_ KnowledgeC@fe (localhost.localdomain)_files/jquery.fancybox.css"><script type="text/javascript" src="./_ KnowledgeC@fe (localhost.localdomain)_files/jquery.fancybox.impl.js.download"></script><script type="text/javascript" src="./_ KnowledgeC@fe (localhost.localdomain)_files/import.bundle.js.download"></script><script type="text/javascript" src="./_ KnowledgeC@fe (localhost.localdomain)_files/jqModal.js.download"></script><script type="text/javascript" src="./_ KnowledgeC@fe (localhost.localdomain)_files/jqModal.impl.js.download"></script>
+<script type="text/javascript" charset="UTF-8" src="./_ KnowledgeC@fe (localhost.localdomain)_files/jquery.ui.datepicker.impl.js.download"></script>
+<script type="text/javascript" charset="UTF-8" src="./_ KnowledgeC@fe (localhost.localdomain)_files/jquery.ui.datepicker-jp.js.download"></script>
+<script type="text/javascript">
+lastportaldiv = "ad";
+</script>
+<noscript><META HTTP-EQUIV=Refresh CONTENT="0; URL=/js_ng.html"></noscript>    <title> | KnowledgeC@fe (localhost.localdomain)</title>
+<script type="text/javascript">
+
+function setClasses()
+{
+
+    var classCodes = new Array();
+    var classNames = new Array();
+
+    $("input[name='classes']:checked").each(function() {
+        classCode = $(this).val();
+        className = $("#className_" + classCode).val();
+        classCodes.push(classCode);
+        classNames.push(className);
+    });
+
+    if (classCodes.length > 0) {
+        parent.showClasses(classCodes, classNames);
+    }
+    parent.$.fancybox.close();
+	parent.window.focus();
+
+}
+
+function setClass()
+{
+    classCode = $("input[name='classes']:checked").val();
+    if (classCode !== undefined) {
+        className = $("#className_" + classCode).val();
+        parent.$('#searchClassCode').val(classCode);
+        parent.$('#searchClassName').val(className);
+    }
+    parent.$.fancybox.close();
+	parent.window.focus();
+}
+
+</script>
+<style type="text/css">.fancybox-margin{margin-right:0px;}</style></head>
+<body class="kc-co-page_left" cz-shortcut-listen="true" style="">
+        <div class="kc-co-content-dialog">
+            <div class="kc-co-title-popup">
+                <button class="kc-co-close-popup" type="button"></button>
+                <p class="kc-co-line-height25">
+                    クラス選択
+                </p>
+            </div>
+            <div class="kc-co-content-inner">
+            <!--↓ エラーメッセージ表示域 ↓-->
+            <div id="errMsg" style="display:none">
+                <div class="kc-co-alert-area">
+                    <ul>
+                                            </ul>
+                </div>
+            </div>
+            <!--↑ エラーメッセージ表示域 ↑-->
+            <form name="parentsForm" method="post" id="parentsForm" action="http://172.16.0.168/index.php">
+	            <input type="hidden" id="hash" value="c5ec5e01c449bb2e22af85e71680fd5d636ef62cd5d4613e15927699285ca404" name="hash"> <input type="hidden" id="headerAuth" name="headerAuth"> <input type="hidden" id="searchCourseCode" name="searchCourseCode"> <input type="hidden" id="searchCompanyCode" name="searchCompanyCode"> <input type="hidden" id="searchStartDate" name="searchStartDate"> <input type="hidden" id="searchStartTime" name="searchStartTime"> <input type="hidden" id="searchRoomCode" name="searchRoomCode"> <input type="hidden" id="isClassManager" name="isClassManager"> <input type="hidden" id="selectType" name="selectType" value="1">
+	            <div class="kc-co-hr"><hr></div>
+	            <h2>クラス検索</h2>
+                <div class="kc-co-content-box kc-co-div-search">
+
+            <table class="kc-co-tbl-search">
+                <tbody>
+                    <tr>
+                        <th class="kc-co-width_2M">クラスコード</th>
+                        <td>
+                            <input type="text" id="searchClassCode" class="kc-co-width_XL" style="ime-mode: disabled;" maxlength="100" name="searchClassCode" value=""><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="kc-co-width_2M">クラス名</th>
+                        <td>
+                            <input type="text" id="searchClassName" class="kc-co-width_XL" maxlength="100" name="searchClassName" value=""><br>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="kc-co-hr"><hr></div>
+            <div class="kc-co-align-center kc-co-h60">
+                <a href="javascript:void(0);" onclick="submitForm(&#39;/FLM9T/common/search-class&#39;);return false;"><button class="kc-co-btn-style kc-co-btn-style-submit" type="button">クラス検索</button></a>
+            </div>
+            </div>
+            <div class="kc-co-hr"><hr></div>
+	            	                <div class="kc-co-pagination">
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                    </div>
+	                <div class="kc-co-button-area">
+                        <a href="javascript:void(0)" onclick="parent.window.focus(); parent.$.fancybox.close();return false;"><button class="kc-co-btn-grey-detail kc-co-btn-modal-close" type="button">閉じる</button></a>
+	                    	            </div>
+
+	            <div class="kc-co-hr"><hr></div>
+            </form>
+            </div>
+        </div>
+    
+<script type="text/javascript">
+	
+	$(document).ready(function(){
+		$(".kc-co-close-popup").click(function () {
+			window.parent.closeFancyBox();
+		});
+	});
+	
+</script>
+
+</body></html>

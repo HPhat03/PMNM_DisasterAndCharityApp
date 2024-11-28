@@ -1,0 +1,24 @@
+#static-modal-group-search {
+    display: flex;
+    position: fixed;
+    flex-direction: column;
+    top: 0;
+    left: 0;
+    justify-content: center;
+    align-items: center;
+    background-image: url("../../../../img/fancybox_overlay.png");
+    width: 100%;
+    height: 100%;
+}
+
+.static-modal-item {
+    width: 800px;
+    height: 600px;
+    background-color: white;
+    margin: 50px 0px;
+    display: none;
+}
+
+.static-modal-item{
+    overflow-y: auto;
+}

@@ -1,0 +1,393 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja" class="">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <meta http-equiv="Content-Script-Type" content="text/javascript">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <meta http-equiv="x-ua-compatible" content="ie=edge,chrome=1">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" type="text/css" charset="UTF-8" media="all" href="./base_css/kc-le-import.css">
+  <script type="text/javascript" charset="UTF-8" src="./base_js/import.js"></script>
+  <script type="text/javascript" src="./base_js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="./base_js/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="./base_js/fancybox-2.1.7/jquery.fancybox.pack.js"></script>
+  <link rel="stylesheet" type="text/css" charset="UTF-8" media="all"
+    href="./base_js/fancybox-2.1.7/jquery.fancybox.css">
+  <script type="text/javascript" src="./base_js/jquery.fancybox.impl.js"></script>
+  <script type="text/javascript" src="./base_js/import.bundle.js"></script>
+  <script type="text/javascript" src="./js/jqModal-1.4.2/jqModal.js"></script>
+  <script type="text/javascript" src="./js/jqModal.impl.js"></script>
+  <script type="text/javascript" charset="UTF-8" src="./base_js/datepicker_lang/jquery.ui.datepicker-jp.js"></script>
+  <script type="text/javascript" charset="UTF-8" src="./base_js/jquery.ui.datepicker.impl.js"></script>
+  <script type="text/javascript" charset="UTF-8" src="./icm/base_js/modules/engagement-survey/init-update.js"></script>
+  <script type="text/javascript">
+    lastportaldiv = "le";
+  </script>
+  <noscript>
+    <META HTTP-EQUIV=Refresh CONTENT="0; URL=/js_ng.html">
+  </noscript>
+  <title>エンゲージメントサーベイ設定一括更新完了 | KnowledgeC@fe </title>
+</head>
+
+<body class="kc-co-page" cz-shortcut-listen="true" style="">
+  <div class="kc-co-wrapper">
+    <script type="text/javascript">
+
+      $(document).ready(function () {
+        $("#kc-co-nav").addClass("kc-co-clearfix");
+      });
+
+    </script>
+    <div id="kc-co-container">
+      <div class="kc-co-header-wrap">
+        <div class="kc-co-header kc-co-clearfix">
+          <div class="kc-co-logo-area">
+            <a href="#"><img width="293" height="52" alt="ロゴ" src="./img/logo.png"
+                srcset="./img/logo.png 1x, ./img/logo@2x.png 2x"></a>
+          </div>
+
+          <div class="kc-co-h-menu-area">
+            <ul>
+              <li><a href="#"> 
+                <!-- class="kc-co-menu-list"  -->
+                  <img alt="メニュー一覧" src="./img/kc-co-icn_menu-header.png"
+                    srcset="./img/kc-co-icn_menu-header.png 1x,./img/kc-co-icn_menu-header@2x.png 2x" width="40"
+                    height="40">メニュー一覧
+                </a>  
+              </li>
+              <li>
+                <a href="javascript:void(0)" onclick="checkRegist(&#39;FLM9T&#39;);return false;">
+                  <img alt="カートへ" src="./img/kc-co-icn_cart-header.png"
+                    srcset="./img/kc-co-icn_cart-header.png 1x,./img/kc-co-icn_cart-header@2x.png 2x" width="40"
+                    height="40">カートへ
+                </a>
+              </li>
+              <li class="user-item">
+                <p>FLM管理者&nbsp;様</p>
+              </li>
+              <li>
+                <a href="javascript:void(0);" onclick="submitForm(&#39;/FLM9T/login/init-logout&#39;);return false;">
+                  <img alt="ログアウト" src="./img/kc-co-inc_logout-header.png"
+                    srcset="./img/kc-co-inc_logout-header.png 1x,./img/kc-co-inc_logout-header@2x.png 2x" width="40"
+                    height="40">ログアウト
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="kc-co-m-menu-area kc-co-default-pc">
+        <div class="kc-co-menu-tab">
+          <div class="kc-co-menu-tab-box ">
+            <ul>
+
+              <li><a href="javascript:void(0)" >マイページ</a></li>
+
+              <li><a href="javascript:void(0)">グループ管理者</a></li>
+
+              <li><a class="kc-co-tab-active" href="javascript:void(0)">講師</a></li>
+
+              <li><a href="javascript:void(0)">管理者</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="kc-co-s-menu-area-wrap">
+          <div class="kc-co-s-menu-area">
+            <ul id="kc-co-nav" class="kc-co-clearfix">
+              <li class="level_1st" style="z-index: 1007;">
+                <a href="javascript:void(0)" class="">申込管理</a>
+                <ul style="z-index: 0; display: none;">
+                  <li>
+                    <a href="javascript:void(0)">申込受付</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">受付状態一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">申込状況参照</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">申込情報一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">申込日程変更</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">クラス情報一覧</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">クラス受講割当</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">クラス受講割当一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">所属受講割当</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">所属割当済コース参照</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="level_1st" style="z-index: 1025;">
+                <a href="javascript:void(0)" class="">コース管理</a>
+                <ul style="z-index: 0; display: none;">
+                  <li class="">
+                    <a href="javascript:void(0)" class="">コース登録</a>
+                  </li>
+                  <li class="">
+                    <a href="javascript:void(0)" class="">コース情報変更・削除</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">コース一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">日程管理</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">日程一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">教室登録</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">教室情報変更・削除</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">カスタムグループコース公開設定</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">前提条件設定</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="level_1st" style="z-index: 1019;">
+                <a href="javascript:void(0)" class="">eラーニング教材情報管理</a>
+                <ul style="z-index: 0; display: none;">
+                  <li>
+                    <a href="javascript:void(0)">eラーニング教材新規登録</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">eラーニング教材管理</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="level_1st" style="z-index: 1020;">
+                <a href="javascript:void(0)" class="">採点管理</a>
+                <ul style="z-index: 0; display: none;">
+                  <li class="">
+                    <a href="javascript:void(0)" class="">テスト採点</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">レポート採点</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">レポート採点結果一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">レポート確定ステータス変更</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">レポート提出</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="level_1st" style="z-index: 1024;">
+                <a href="javascript:void(0)" class="">受講履歴管理</a>
+                <ul style="z-index: 0; display: none;">
+                  <li class="">
+                    <a href="javascript:void(0)" class="">受講履歴変更</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">受講履歴一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">eラーニング成績参照</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">アンケート結果参照</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">データ分析</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">ダッシュボード参照</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">学習レポート（テスト比較）</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">学習レポート（テスト）設定一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">学習レポート（テスト）設定参照</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">アンケート結果学習レポート</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">学習レポート（アンケート比較）</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">学習レポート（アンケート）設定一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">学習レポート（アンケート）設定参照</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">クラス受講履歴参照</a>
+                  </li>
+                  <li>
+                    <a href="../エンゲージメントサーベイ比較検索/init-search.html">エンゲージメントサーベイ比較検索</a>
+                  </li>
+                  <li>
+                    <a href="../エンゲージメントサーベイ設定一括更新/init-update.html">エンゲージメントサーベイ設定一括更新</a>
+                  </li>
+                  <li>
+                    <a href="../エンゲージメントサーベイ設定参照/init-search.html">エンゲージメントサーベイ設定参照</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="level_1st" style="z-index: 1023;">
+                <a href="javascript:void(0)" class="">コミュニケーション管理</a>
+                <ul style="z-index: 0; display: none;">
+                  <li class="">
+                    <a href="javascript:void(0)" class="">フォローアップメール管理</a>
+                  </li>
+                  <li class="">
+                    <a href="javascript:void(0)" class="">フォローアップメール一括更新</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">フリーメール登録</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">受講期間中ユーザへのフリーメール登録</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">メール送信履歴</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">講師への質問一覧</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">ソーシャルラーニングコメント管理</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">コース担当グループ設定</a>
+                  </li>
+                  <li>
+                    <a href="javascript:void(0)">教材担当グループ設定</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="level_1st" style="z-index: 1002;">
+                <a href="javascript:void(0)" class="">ダウンロード管理</a>
+                <ul style="z-index: 0; display: none;">
+                  <li>
+                    <a href="javascript:void(0)">ダウンロードメニュー</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="level_1st" style="z-index: 1001;">
+                <a href="javascript:void(0)" class="">ヘルプ</a>
+                <ul style="z-index: 0; display: none;">
+                  <li>
+                    <a href="https://www.kcc.knowledgewing.com/manual/knowledgecafe/koushi.pdf" target="_blank" rel="noopener">操作マニュアル (講師編)</a>
+                  </li>
+                  <li>
+                    <a href="https://www.kcc.knowledgewing.com/manual/knowledgecafe/requirements.pdf" target="_blank" rel="noopener">動作環境</a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="kc-co-navi-area-wrap">
+        <div class="kc-co-navi-area">
+          <ul>
+            <li><a href="#">管理者トップ</a></li>
+            <li class="kc-co-navi-no-link">受講履歴管理</li>
+            <li>エンゲージメントサーベイ設定一括更新完了</li>
+          </ul>
+        </div>
+        <div class="kc-co-title-wrap">
+          <div class="kc-co-contents-nobg">
+            <h2><span>エンゲージメントサーベイ設定一括更新完了</span></h2>
+          </div>
+        </div>
+      </div>
+      <form name="parentsForm" id="parentsForm" >
+        <input type="hidden" id="hash" value="9d857511c4736f2eeb854379bf482dd7c609b1032a1261bdb7fb70d22ef5d923"
+          name="hash"> <input type="hidden" id="headerAuth" name="headerAuth" value="ad">
+        <div class="kc-co-contents-nobg">
+          <div class="kc-co-content-box kc-co-light-grey-bg">
+            <div class="kc-co-message">
+              <div class="kc-co-message-box">
+                <p>エンゲージメントサーベイ設定の一括更新処理が完了しました。<br>更新結果は以下をご確認ください。</p>
+              </div>
+            </div>
+            <div class="kc-co-hr">
+              <hr>
+            </div>
+            <h2>更新結果</h2>
+            <div class="kc-co-results">■更新完了<span>1件</span></div><br>
+            <div class="kc-co-results">■更新失敗<span>1件</span></div>
+            <div class="kc-co-results-message">更新用CSVファイルの中から更新が失敗した情報を取り出す場合は「未更新情報の抽出」ボタンをクリックしてください。</div>
+            <div class="kc-co-button-area">
+              <div class="f-forward">
+                <a href="javascript:void(0)"
+                  onclick="LogDowload('failure_records');">
+                  <button class="kc-co-btn-grey-detail kc-co-btn-small kc-co-btn-text" type="button">未更新情報の抽出</button>
+                </a>
+              </div>
+            </div>
+            <div class="kc-co-results">■更新結果詳細</div>
+            <div class="kc-co-results-message">
+              2件のエンゲージメントサーベイ設定のうち、1件の更新が完了しました。<br>全ての更新結果の詳細を確認する場合は「更新結果の詳細情報」ボタンをクリックしてください。</div>
+            <div class="kc-co-button-area">
+              <div class="f-forward">
+                <a href="javascript:void(0)"
+                  onclick="LogDowload('update_results');">
+                  <button class="kc-co-btn-grey-detail kc-co-btn-small kc-co-btn-text" type="button">更新結果の詳細情報</button>
+                </a>
+              </div>
+            </div>
+            <div class="kc-co-hr">
+              <hr>
+            </div>
+            <div class="kc-co-align-center kc-co-h60">
+              <button type="button" class="kc-co-btn-style kc-co-btn-style-submit"
+                onclick="location.href = './init-update.html'">管理者トップへ</button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+    </div>
+    <div class="kc-co-footer">
+      <p class="kc-le-copyright">Powered by KnowledgeC@fe</p>
+    </div>
+  </div>
+
+  <div class="kc-co-jqModal-wrap">
+    <div class="kc-co-content-dialog kc-co-transition-dialog" id="transitionDialog" style="display:none;">
+      <div class="kc-co-popup-outer kc-co-mb22">
+        <h2 class="kc-co-ml20 kc-co-mt20" id="transitionTitle"></h2>
+        <p class="kc-co-popup-content-text" id="transitionMessage"></p>
+        <hr class="kc-co-bor-hr">
+        <div class="kc-co-mt20 kc-co-align-center  kc-co-btn-yesno-align">
+          <button class="kc-co-btn-yes-popup"
+            onclick="submitForm(&#39;/icm/FLM9T/course-application/init-regist&#39;);return false;"
+            type="button">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
