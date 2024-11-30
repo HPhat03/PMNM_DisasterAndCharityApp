@@ -110,7 +110,12 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
+CLOUDINARY = {
+    'cloud_name': 'dzm6ikgbo',
+    'api_key': '539987548171822',
+    'api_secret': 'FfePKpjetbSwFufRAnuWoDMeaIA',
+    # 'api_proxy': 'http://proxy.server:3128'
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
