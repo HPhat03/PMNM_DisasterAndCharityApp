@@ -1,5 +1,4 @@
 from lib2to3.fixes.fix_input import context
-from sys import is_stack_trampoline_active
 
 from django.conf import settings
 from django.db.models import Sum

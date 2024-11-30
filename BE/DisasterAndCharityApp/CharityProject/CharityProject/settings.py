@@ -25,12 +25,13 @@ SECRET_KEY = 'django-insecure-vksiqy_8642*=sogpct@mplnexj#g)_u)0$!2oej6&0tggh_j(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,11 +41,13 @@ INSTALLED_APPS = [
     'CharityApp',
     'oauth2_provider',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,7 +72,12 @@ TEMPLATES = [
         },
     },
 ]
-
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:8080",
+#     "http://192.168.0.104:8000",
+#     "http://127.0.0.1:8080"
+# ]
+CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
 
 
@@ -109,7 +117,57 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+JAZZMIN_SETTINGS = {
+    "site_title": "Hệ thống cứu trợ",
+    "site_header": "Quản lý từ thiện và thiên tai",
+    "site_brand": "Quản lý chi tiết",
+    "welcome_sign": "Chào mừng bạn đến với trang quản lý",
+    "copyright": "Copyright © 2024 Quản lý từ thiện và thiên tai",
 
+    # Tùy chỉnh thanh menu bên trái
+    "topmenu_links": [
+        {"name": "Trang chủ", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"app": "auth"},  # Link đến trang quản lý người dùng
+        {"app": "busmap"},  # Link đến trang quản lý ứng dụng busmap
+    ],
+
+    # Tùy chỉnh thanh sidebar menu
+    "usermenu_links": [
+        {"name": "Xem hồ sơ", "url": "admin:auth_user_change", "new_window": False},
+    ],
+
+    # Màu sắc chủ đạo của giao diện
+    "show_sidebar": True,  # Hiển thị sidebar
+    "navigation_expanded": False,  # Không mở rộng menu sidebar mặc định
+    "hide_apps": [],  # Ẩn những ứng dụng không cần thiết (nếu có)
+    "hide_models": [],  # Ẩn các model không cần thiết trong admin
+
+    # Đăng ký các ứng dụng (apps) và mô hình (models) vào admin
+    "icons": {
+        "auth": "fas fa-users-cog",  # Ứng dụng auth
+        "auth.user": "fas fa-user",  # Model User trong auth
+        "auth.Group": "fas fa-users",  # Model Group trong auth
+
+        # Đăng ký các icon cho app busmap và các model của bạn
+        "busmap.TuyenDuong": "fas fa-road",  # Icon cho model TuyenDuong
+        "busmap.TramDung": "fas fa-bus",  # Icon cho model TramDung
+        "busmap.ChuyenXe": "fas fa-shuttle-van",  # Icon cho model ChuyenXe
+        "busmap.DanhGiaTuyenDuong": "fas fa-star",  # Icon cho model DanhGiaTuyenDuong
+        "busmap.BaoCaoChuyenXe": "fas fa-exclamation-circle",  # Icon cho model BaoCaoChuyenXe
+        "busmap.LichTrinh": "fas fa-clock",  # Icon cho model LichTrinh
+        "busmap.ViTriXe": "fas fa-map-marker-alt",  # Icon cho model ViTriXe
+        "busmap.LichTrinhYeuThich": "fas fa-heart",  # Icon cho model LichTrinhYeuThich
+        "busmap.Xe": "fas fa-bus-alt",  # Icon cho model Xe
+        "busmap.TuyenTram": "fas fa-random",  # Icon cho model TuyenTram
+        "busmap.User": "fas fa-user-tie",  # Icon cho model User
+    },
+
+    # Các tùy chọn khác
+    "order_with_respect_to": ["auth", "busmap"],  # Đặt thứ tự hiển thị các apps
+    "custom_css": None,  # Thêm CSS tùy chỉnh (nếu có)
+    "custom_js": None,  # Thêm JavaScript tùy chỉnh (nếu có)
+    "show_ui_builder": False,  # Ẩn tính năng "UI Builder"
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
