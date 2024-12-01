@@ -71,3 +71,13 @@ class CampagnSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = DonationCampaign
         fields = "__all__"
+
+class SupplyTypeSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = SupplyType
+        fields = "__all__"
+
+class LocationSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Location
+        fields = "__all__"
