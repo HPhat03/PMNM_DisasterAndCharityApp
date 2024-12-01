@@ -53,6 +53,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'CharityProject.urls'
@@ -79,11 +81,11 @@ TEMPLATES = [
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '2ff9-27-64-68-99.ngrok-free.app']
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-# Oauth2 Secret sqlite3: POUOfttsyIDg0NBRg1D2VZEw2IYVdXDdhIQqwLmjqvhiQ2VqWyXjDMavmg4VpoIYsWIB8bCxO4NY4OefV4HhBGsliH86P4ulTiInW4wMG91MYRCoXB1C9M4RuAwAG3aV
+# Oauth2 Secret sqlite3: 4QEmfQijtK5DTREwCg0W4gQcqxww0wIFXSUqvDzsAyuMMPHs6r0x6ydFG2kgcEPehCQmtqq0jD4sWn3rkLHouIkrCte05RBqfm7gsm1VGRszTh5qJBosGvzYfwxfpf4L
 # Oauth2 ID: 634POpM5S6PTDpZRgsCHG2cfnvRDgnyCH7c5sF0n
 DATABASES = {
     'default': {

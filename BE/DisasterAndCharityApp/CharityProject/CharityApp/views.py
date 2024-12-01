@@ -1,4 +1,5 @@
 
+
 from django.db.models import  Q
 from rest_framework import status
 from rest_framework.decorators import action
@@ -61,32 +62,52 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         res = "Not OK"
+        print(request.data)
+        if "locations" not in request.data:
+            return Response("chưa có nơi cứu trợ", status=status.HTTP_200_OK)
+        else:
+            locations = request.data.pop("locations")
 
-        with transaction.atomic():
-            campaign = DonationCampaign(**request.data)
-            campaign.org = request.user.chartity_org_info
-            if campaign.expected_charity_end_date < campaign.expected_charity_start_date:
-                return Response("Lỗi thời gian tổ chức quyên góp", status=status.HTTP_200_OK)
-            if campaign.expected_charity_start_date < date.today():
-                return Response("Không thể xác nhận ngày quyên góp trước thời gian hiện tại", status=status.HTTP_200_OK)
-            if campaign.expected_fund < 1000000:
-                return Response("Số tiền mục tiêu chưa đủ", status=status.HTTP_200_OK)
-            campaign.save()
+        supply_type = SupplyType.objects.filter(pk=request.data.pop('supply_type')).first()
+        if(supply_type == None):
+            return Response("Không tìm thấy loại hình quyên góp", status=status.HTTP_200_OK)
+        try:
+            with transaction.atomic():
+                campaign = DonationCampaign(**request.data)
+                campaign.org = request.user.charity_org_info
+                campaign.is_permitted = False
+                campaign.supply_type = supply_type
+                if campaign.expected_charity_end_date < campaign.expected_charity_start_date:
+                    raise ValueError("Lỗi thời gian tổ chức quyên góp")
+                if campaign.expected_charity_start_date < date.today().__str__():
+                    raise ValueError("Không thể xác nhận ngày quyên góp trước thời gian hiện tại")
+                campaign.save()
 
-            if "enclosed" in request.data.keys():
-                for enc in request.data["enclosed"]:
-                    tmp = Article.objects.filter(pk=enc).first()
-                    if tmp is None:
-                        break
-                    campaign.enclosed_article.add(tmp)
-                campaign.save() 
-            
-            admin = Admin.objects.order_by('?').first()
-            first_approval = Approval(admin= admin, donation=campaign)
-            first_approval.save()
+                tmp = 0
+                for lct in locations:
+                    location = Location.objects.filter(pk=lct['id']).first()
+                    if location is not None:
+                        cplc = CampaignLocation(campaign = campaign, location = location, expected_fund = lct['expected_fund'])
+                        cplc.save()
+                        tmp += cplc.expected_fund
 
-               
-            res = self.serializer_class(campaign, context={'request': request}).data
+                if tmp == 0:
+                    raise ValueError("ko tìm thấy bất kì nơi cứu trợ nào")
+
+                if "enclosed" in request.data.keys():
+                    for enc in request.data["enclosed"]:
+                        tmp = Article.objects.filter(pk=enc).first()
+                        if tmp is None:
+                            break
+                        campaign.enclosed_article.add(tmp)
+                    campaign.save()
+
+                admin = Admin.objects.order_by('?').first()
+                first_approval = Approval(admin= admin, donation=campaign)
+                first_approval.save()
+                res = self.serializer_class(campaign, context={'request': request}).data
+        except Exception as e:
+            return Response(e.__str__(), status=status.HTTP_200_OK)
         return Response(res, status=status.HTTP_200_OK)
     
     @transaction.atomic()
@@ -131,4 +152,18 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
             campagn.save()
             res = "Huỷ thành công"
         return Response(res, status=status.HTTP_200_OK)
-    
+
+class SupplyTypeViewSet(ViewSet, generics.ListAPIView):
+    queryset =  SupplyType.objects.filter(active=True)
+    serializer_class = SupplyTypeSerializer
+    # permission_classes = [IsAuthenticated]
+
+class LocationViewSet(ViewSet, generics.ListAPIView):
+    queryset = Location.objects.filter(active=True).order_by("location")
+    serializer_class = LocationSerializer
+    # permission_classes = [IsAuthenticated]
+
+    @action(methods = ["GET"], detail= False)
+    def in_need(self, request):
+        qs = Location.objects.filter(active=True).exclude(status=LocationState.NORMAL)
+        return Response(LocationSerializer(qs, context={"request": request}).data, status = status.HTTP_200_OK)
