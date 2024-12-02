@@ -81,3 +81,13 @@ class LocationSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Location
         fields = "__all__"
+
+class ReportSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = DonationReport
+        fields = "__all__"
+
+class PostSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = DonationPost
+        fields = "__all__"

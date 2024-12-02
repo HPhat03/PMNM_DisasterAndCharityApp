@@ -1,9 +1,10 @@
+from lib2to3.fixes.fix_input import context
 
-
+from cloudinary.uploader import upload
 from django.db.models import  Q
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser,FileUploadParser
+from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -14,6 +15,7 @@ from .permissions import *
 # Create your views here.
 LIMIT_REPORT = 5
 LIMIT_REPORT_DAY = 10
+LIMIT_APPROVAL = 3
 class UserViewSet(ViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -47,7 +49,19 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
     queryset = DonationCampaign.objects.filter(active=True)
     serializer_class = CampagnSerializer
 
+    def initialize_request(self, request, *args, **kwargs):
+        request = super().initialize_request(request, *args, **kwargs)
+        self.action = self.action_map.get(request.method.lower())
+        print(request.content_type)
+        if request.method in ['POST'] and self.action == 'add_picture':
+            request.parsers = [MultiPartParser(), FileUploadParser()]
+        else:
+            request.parsers = [JSONParser()]
+        return request
+
     def get_permissions(self):
+        if self.action in ['approve','add_picture']:
+            return [AllowAny()]
         if self.action == 'create':
             return [IsCharityOrg()]
         return [IsAuthenticated()]
@@ -62,7 +76,6 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         res = "Not OK"
-        print(request.data)
         if "locations" not in request.data:
             return Response("chưa có nơi cứu trợ", status=status.HTTP_200_OK)
         else:
@@ -98,18 +111,35 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
                     for enc in request.data["enclosed"]:
                         tmp = Article.objects.filter(pk=enc).first()
                         if tmp is None:
-                            break
+                            continue
                         campaign.enclosed_article.add(tmp)
                     campaign.save()
 
                 admin = Admin.objects.order_by('?').first()
+                print(admin)
                 first_approval = Approval(admin= admin, donation=campaign)
                 first_approval.save()
                 res = self.serializer_class(campaign, context={'request': request}).data
         except Exception as e:
             return Response(e.__str__(), status=status.HTTP_200_OK)
         return Response(res, status=status.HTTP_200_OK)
-    
+
+    @transaction.atomic()
+    @action(methods=['POST'], detail=True)
+    def add_picture(self, request, pk=None):
+        res = []
+        campagn = DonationCampaign.objects.filter(pk=pk).first()
+        if campagn is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        with transaction.atomic():
+            images = request.FILES.getlist('images')
+            for image in images:
+                cloudinary = upload(image)
+                cp = ContentPicture(donation=campagn, path=cloudinary['secure_url'])
+                cp.save()
+                res.append(cloudinary['secure_url'])
+        return Response(res, status=status.HTTP_200_OK)
+
     @transaction.atomic()
     @action(methods = ['POST'], detail = True)
     def report(self, request, pk=None):
@@ -152,6 +182,94 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
             campagn.save()
             res = "Huỷ thành công"
         return Response(res, status=status.HTTP_200_OK)
+
+    @transaction.atomic()
+    @action(methods=['POST'], detail=True)
+    def approve(self, request,pk=None):
+        admin = Admin.objects.filter(user_info_id=request.data['cur_admin']).first()
+
+        if admin is None:
+            return Response("Không tìm thấy admin hiện tại", status=status.HTTP_403_FORBIDDEN)
+        campaign = DonationCampaign.objects.filter(pk=pk).first()
+        if campaign is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        approval = Approval.objects.filter(donation=campaign,is_approved=None).first()
+        approval.is_approved = True
+        is_final = request.data['is_final']
+
+        if approval.time_id < LIMIT_APPROVAL and not is_final:
+            ad = Admin.objects.filter(user_info_id= request.data['next_admin']).first()
+            time_id = approval.time_id + 1
+            tmp = Approval(admin= ad, donation=campaign, time_id = time_id, created_date = date.today())
+            tmp.save()
+            print(tmp)
+        elif approval.time_id == LIMIT_APPROVAL or is_final:
+            approval.is_final = True
+            campaign.is_permitted = True
+            campaign.save()
+        approval.save()
+        res = "OK"
+        return Response(res, status=status.HTTP_200_OK)
+
+class DonationReportViewSet(ViewSet, generics.ListAPIView):
+    queryset = DonationReport.objects.filter(active=True)
+    serializer_class = ReportSerializer
+
+    @transaction.atomic()
+    @action(methods=['POST'], detail=True)
+    def approve(self, request, pk=None):
+        admin = Admin.objects.filter(user_info_id=request.data['cur_admin']).first()
+        if admin is None:
+            return Response("Không tìm thấy admin hiện tại", status=status.HTTP_403_FORBIDDEN)
+        report = DonationReport.objects.filter(pk=pk).first()
+        if report is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        approval = Confimation(admin_id=request.user.id, report = report)
+        approval.save()
+        return Response(self.serializer_class(approval, context = {"request": request}), status=status.HTTP_200_OK)
+
+class DonationPostViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
+    queryset = DonationPost.objects.filter(active=True)
+    serializer_class = PostSerializer
+
+    def initialize_request(self, request, *args, **kwargs):
+        request = super().initialize_request(request, *args, **kwargs)
+        self.action = self.action_map.get(request.method.lower())
+        print(request.content_type)
+        if request.method in ['POST'] and self.action == 'add_picture':
+            request.parsers = [MultiPartParser(), FileUploadParser()]
+        else:
+            request.parsers = [JSONParser()]
+        return request
+
+    @transaction.atomic()
+    @action(methods=['POST'], detail=True)
+    def add_picture(self, request, pk=None):
+        res = []
+        post = DonationPost.objects.filter(pk=pk).first()
+        if post is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        with transaction.atomic():
+            images = request.FILES.getlist('images')
+            for image in images:
+                cloudinary = upload(image)
+                pic = DonationPostPicture(post=post, picture = cloudinary['secure_url'])
+                pic.save()
+                res.append(cloudinary['secure_url'])
+        return Response(res, status=status.HTTP_200_OK)
+
+    @transaction.atomic()
+    @action(methods=['POST'], detail=True)
+    def approve(self, request, pk=None):
+        admin = Admin.objects.filter(user_info_id=request.data['cur_admin']).first()
+        if admin is None:
+            return Response("Không tìm thấy admin hiện tại", status=status.HTTP_403_FORBIDDEN)
+        post = DonationPost.objects.filter(pk=pk).first()
+        if post is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        approval = DonationPostApproval(admin_id=request.user.id, post=post, priority = request.data['priority'])
+        approval.save()
+        return Response(self.serializer_class(approval, context={"request": request}), status=status.HTTP_200_OK)
 
 class SupplyTypeViewSet(ViewSet, generics.ListAPIView):
     queryset =  SupplyType.objects.filter(active=True)
