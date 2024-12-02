@@ -154,7 +154,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
                 dp.save()
             rp.total_used = tmp
             fund = sum(location.current_fund  for location in campagn.locations.all())
-            rp.total_left = fun - tmp
+            rp.total_left = fund - tmp
             rp.save()
 
             if rp.total_used == 0: 
