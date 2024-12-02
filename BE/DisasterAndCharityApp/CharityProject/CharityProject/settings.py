@@ -81,7 +81,7 @@ TEMPLATES = [
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '2ff9-27-64-68-99.ngrok-free.app']
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

@@ -81,3 +81,7 @@ class LocationSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Location
         fields = "__all__"
+class CampaignLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignLocation
+        fields = ['id', 'campaign', 'location', 'expected_fund', 'current_fund']

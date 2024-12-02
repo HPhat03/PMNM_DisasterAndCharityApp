@@ -1,12 +1,13 @@
-
+import json
 
 from django.db.models import  Q
-from rest_framework import status
+from rest_framework import status, parsers
 from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser,FileUploadParser
+from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.core.files.storage import FileSystemStorage
 from .models import *
 from .serializers import *
 from .permissions import *
@@ -46,10 +47,11 @@ class UserViewSet(ViewSet):
 class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
     queryset = DonationCampaign.objects.filter(active=True)
     serializer_class = CampagnSerializer
+    parser_classes = [parsers.MultiPartParser, ]
 
     def get_permissions(self):
         if self.action == 'create':
-            return [IsCharityOrg()]
+            return [IsAuthenticated()]
         return [IsAuthenticated()]
 
     def get_queryset(self):
@@ -58,6 +60,16 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
         if kw is not None:
             q = q.filter(Q(title__icontains=kw)|Q(content__icontains=kw))
         return q
+
+    def initialize_request(self, request, *args, **kwargs):
+        request = super().initialize_request(request, *args, **kwargs)
+        self.action = self.action_map.get(request.method.lower())
+        print(request.content_type)
+        if request.method in ['POST'] and self.action == 'report':
+            request.parsers = [MultiPartParser(), FileUploadParser()]
+        else:
+            request.parsers = [JSONParser()]
+        return request
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
@@ -114,24 +126,37 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
     @action(methods = ['POST'], detail = True)
     def report(self, request, pk=None):
         res = "Not OK"
-        campagn = DonationCampaign.objects.filter(pk=pk, is_permitted = True).first()
+        print(pk)
+        campagn = DonationCampaign.objects.filter(pk=pk).first()
+        print(campagn)
         if campagn is None:
             return Response("Không tồn tại", status=status.HTTP_200_OK)
-        if DonationReport.objects.filter(donation=campagn).count() >= LIMIT_REPORT:
+        if DonationReport.objects.filter(campaign=campagn).count() >= LIMIT_REPORT:
             return Response("Bạn đã hết số lần nộp báo cáo", status=status.HTTP_200_OK)
-        if date.today() - campagn.expected_charity_end_date > LIMIT_REPORT_DAY:
+        if (date.today() - campagn.expected_charity_end_date).days > LIMIT_REPORT_DAY:
             return Response("Bạn đã quá hạn để báo cáo", status=status.HTTP_200_OK)
         with transaction.atomic():
-            rp = DonationReport(donation=campagn)
+            rp = DonationReport(campaign=campagn)
+            rp.total_used = 0
             rp.save()
             tmp = 0
-            for d in request.data['details']:
+            details = json.loads(request.data['details'])
+            for d in details:
                 dt = DetailDonationReport(**d)
+                dt.report = rp
                 tmp+= dt.paid
                 dt.save()
+            for file in request.FILES.getlist('file'):
+                fs = FileSystemStorage()
+                file_name = fs.save(file.name, file)
+                file_url = fs.url(file_name)
+                dp = DonationReportPicture(report=rp, path=file_url)
+                dp.save()
             rp.total_used = tmp
-            rp.total_left = campagn.current_fund - tmp
+            fund = sum(location.current_fund  for location in campagn.locations.all())
+            rp.total_left = fun - tmp
             rp.save()
+
             if rp.total_used == 0: 
                 return Response("Số tiền bạn quyên góp là 0, Cảnh Báo", status=status.HTTP_200_OK)
             if rp.total_left > 500000:
@@ -167,3 +192,21 @@ class LocationViewSet(ViewSet, generics.ListAPIView):
     def in_need(self, request):
         qs = Location.objects.filter(active=True).exclude(status=LocationState.NORMAL)
         return Response(LocationSerializer(qs, context={"request": request}).data, status = status.HTTP_200_OK)
+
+class CampaignLocationViewSet(ViewSet):
+    serializer_class = CampaignLocationSerializer
+    queryset = CampaignLocation.objects.all()
+
+    def create(self, request):
+        data = request.data
+
+        if CampaignLocation.objects.filter(campaign=data.get('campaign'), location=data.get('location')).exists():
+            return Response(
+                {"error": "This campaign-location pair already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
