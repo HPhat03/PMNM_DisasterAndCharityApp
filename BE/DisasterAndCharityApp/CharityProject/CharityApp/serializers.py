@@ -85,3 +85,13 @@ class CampaignLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignLocation
         fields = ['id', 'campaign', 'location', 'expected_fund', 'current_fund']
+
+class ReportSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = DonationReport
+        fields = "__all__"
+
+class PostSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = DonationPost
+        fields = "__all__"

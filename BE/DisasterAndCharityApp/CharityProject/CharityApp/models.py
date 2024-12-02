@@ -77,7 +77,6 @@ class DonationCampaign (BaseModel):
     org = models.ForeignKey(CharityOrg, on_delete=models.CASCADE, null=False, related_name="campaign")
     title = models.CharField(max_length=50, default="ABC")
     content = models.TextField()
-    supply_type = models.ForeignKey("SupplyType", on_delete=models.CASCADE, related_name="campaigns", default=1)
     expected_charity_start_date = models.DateField()
     expected_charity_end_date = models.DateField()
     is_permitted = models.BooleanField(default=False)
@@ -104,7 +103,6 @@ class ContentPicture (BaseModel):
 
 class SupplyType (BaseModel):
     type = models.CharField(max_length=10)
-    unit = models.CharField(max_length=10, default="Kg")
 
 class CampaignLocation (BaseModel):
     class Meta:
@@ -126,7 +124,7 @@ class Approval (models.Model):
     admin = models.ForeignKey(Admin, on_delete=models.CASCADE, related_name= 'approvals')
     donation = models.OneToOneField(DonationCampaign, on_delete=models.CASCADE, primary_key=True)
     time_id = models.IntegerField(null=False, default=1)
-    is_approved = models.BooleanField(null=True)
+    is_approved = models.BooleanField(null=False)
     created_date = models.DateField(auto_now_add=True)
     updated_date = models.DateField(auto_now=True)
     active = models.BooleanField(default=True)
@@ -163,6 +161,8 @@ class Location (BaseModel):
     location = models.CharField(max_length=45, unique=True)
     area = models.IntegerField(default = 1)
     current_status = enum.EnumField(LocationState, default=LocationState.NORMAL)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
 
 class StatInfo (BaseModel):
     location = models.ForeignKey(Location, related_name='stat_history', on_delete=models.CASCADE)

@@ -81,12 +81,14 @@ TEMPLATES = [
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '3f2f-27-64-68-99.ngrok-free.app']
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 # Oauth2 Secret sqlite3: 4QEmfQijtK5DTREwCg0W4gQcqxww0wIFXSUqvDzsAyuMMPHs6r0x6ydFG2kgcEPehCQmtqq0jD4sWn3rkLHouIkrCte05RBqfm7gsm1VGRszTh5qJBosGvzYfwxfpf4L
 # Oauth2 ID: 634POpM5S6PTDpZRgsCHG2cfnvRDgnyCH7c5sF0n
+# Oauth2 Secret sqlite3: NQlcDXGf2nbw4aFe1OaoYblorBgnegz2trQj1In4inTZX754WJOfH3g0GatTDUZ4NIjyDJUbRAEjQm4B5KXSoW9LKyXsGp2VMococUKGKiHWgjSs5dXkgKZ8XkNhLtHe
+# Oauth2 ID: S0tU1NWldB4qykngQT91MzWaDYKn2ibpW9pfaUiH
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
