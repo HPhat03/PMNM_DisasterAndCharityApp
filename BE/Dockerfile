@@ -7,6 +7,8 @@ WORKDIR /app
 ADD --chmod=755 https://astral.sh/uv/install.sh /install.sh
 RUN /install.sh && rm /install.sh
 
+RUN apk update && apk add pkgconfig && apk add --no-cache gcc musl-dev mariadb-connector-c-dev
+
 COPY requirements.txt .
 
 RUN /root/.local/bin/uv pip install --system --no-cache -r requirements.txt
