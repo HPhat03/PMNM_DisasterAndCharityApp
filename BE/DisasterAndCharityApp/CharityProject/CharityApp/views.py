@@ -1,3 +1,8 @@
+from lib2to3.fixes.fix_input import context
+
+from cloudinary.uploader import upload
+from django.db.models import  Q
+from rest_framework import status
 import json
 
 from django.db.models import  Q
@@ -13,7 +18,7 @@ from django.core.files.storage import FileSystemStorage
 from .models import *
 from .serializers import *
 from .permissions import *
-from cloudinary.uploader import upload
+import json
 
 # Create your views here.
 LIMIT_REPORT = 5
@@ -58,6 +63,16 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
         self.action = self.action_map.get(request.method.lower())
         print(request.content_type)
         if request.method in ['POST'] and self.action == 'add_picture':
+            request.parsers = [MultiPartParser(), FileUploadParser()]
+        else:
+            request.parsers = [JSONParser()]
+        return request
+
+    def initialize_request(self, request, *args, **kwargs):
+        request = super().initialize_request(request, *args, **kwargs)
+        self.action = self.action_map.get(request.method.lower())
+        print(request.content_type)
+        if request.method in ['POST'] and self.action in ['add_picture','report']:
             request.parsers = [MultiPartParser(), FileUploadParser()]
         else:
             request.parsers = [JSONParser()]
@@ -130,15 +145,32 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
                     campaign.save()
 
                 admin = Admin.objects.order_by('?').first()
+                print(admin)
                 first_approval = Approval(admin= admin, donation=campaign)
                 first_approval.save()
                 res = self.serializer_class(campaign, context={'request': request}).data
         except Exception as e:
             return Response(e.__str__(), status=status.HTTP_200_OK)
         return Response(res, status=status.HTTP_200_OK)
-    
+
     @transaction.atomic()
-    @action(methods = ['POST'], detail = True)
+    @action(methods=['POST'], detail=True)
+    def add_picture(self, request, pk=None):
+        res = []
+        campagn = DonationCampaign.objects.filter(pk=pk).first()
+        if campagn is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        with transaction.atomic():
+            images = request.FILES.getlist('images')
+            for image in images:
+                cloudinary = upload(image)
+                cp = ContentPicture(donation=campagn, path=cloudinary['secure_url'])
+                cp.save()
+                res.append(cloudinary['secure_url'])
+        return Response(res, status=status.HTTP_200_OK)
+
+    @transaction.atomic()
+    @action(methods=['POST'], detail=True)
     def report(self, request, pk=None):
         res = "Not OK"
         print(pk)
@@ -159,7 +191,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
             for d in details:
                 dt = DetailDonationReport(**d)
                 dt.report = rp
-                tmp+= dt.paid
+                tmp += dt.paid
                 dt.save()
             for file in request.FILES.getlist('file'):
                 # fs = FileSystemStorage()
@@ -169,14 +201,14 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
                 dp = DonationReportPicture(report=rp, path=cloudinary['secure_url'])
                 dp.save()
             rp.total_used = tmp
-            fund = sum(location.current_fund  for location in campagn.locations.all())
+            fund = sum(location.current_fund for location in campagn.locations.all())
             rp.total_left = fund - tmp
             rp.save()
 
-            if rp.total_used == 0: 
+            if rp.total_used == 0:
                 return Response("Số tiền bạn quyên góp là 0, Cảnh Báo", status=status.HTTP_200_OK)
             if rp.total_left > 500000:
-                return Response("Số tiền bạn quyên góp còn dư quá nhiều, Cảnh Báo", status=status.HTTP_200_OK)            
+                return Response("Số tiền bạn quyên góp còn dư quá nhiều, Cảnh Báo", status=status.HTTP_200_OK)
         return Response(res, status=status.HTTP_200_OK)
 
     @transaction.atomic()
