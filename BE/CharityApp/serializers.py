@@ -1,6 +1,5 @@
-from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from .models import *
+from .models import Article, CampaignLocation, CharityOrg, Civilian, DonationCampaign, DonationPost, DonationReport, Location, SupplyType, User, UserRole
 from django.db import transaction
 
 #Dynamid
@@ -23,7 +22,6 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
             existing = set(self.fields)
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
-
 
 #Custom
 class UserSerializer(DynamicFieldsModelSerializer):
@@ -55,11 +53,13 @@ class UserSerializer(DynamicFieldsModelSerializer):
             return user
         return None
 
+
 class CivilianFromUserSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Civilian
         # fields = "__all__"
         exclude = ('user_info',)
+
 
 class CharityOrgFromUserSerializer(DynamicFieldsModelSerializer):
     class Meta:
@@ -67,31 +67,44 @@ class CharityOrgFromUserSerializer(DynamicFieldsModelSerializer):
         # fields = "__all__"
         exclude = ('user_info',)
 
+
 class CampagnSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = DonationCampaign
         fields = "__all__"
+
 
 class SupplyTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = SupplyType
         fields = "__all__"
 
+
 class LocationSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Location
         fields = "__all__"
+
+
 class CampaignLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignLocation
         fields = ['id', 'campaign', 'location', 'expected_fund', 'current_fund']
+
 
 class ReportSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = DonationReport
         fields = "__all__"
 
+
 class PostSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = DonationPost
+        fields = "__all__"
+
+
+class ArticleSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Article
         fields = "__all__"

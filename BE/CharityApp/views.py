@@ -1,29 +1,25 @@
-from lib2to3.fixes.fix_input import context
-
-from cloudinary.uploader import upload
-from django.db.models import  Q
-from rest_framework import status
 import json
+from datetime import date
 
-from django.db.models import  Q
-from rest_framework import status, parsers
-from lib2to3.fixes.fix_input import context
 from cloudinary.uploader import upload
+from django.db import transaction
+from django.db.models import Q
+from rest_framework import status
+from rest_framework import parsers
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.core.files.storage import FileSystemStorage
-from .models import *
-from .serializers import *
-from .permissions import *
-import json
+
+from .models import Admin, Approval, Article, CampaignLocation, Confimation, ContentPicture, DetailDonationReport, DonationCampaign, DonationPost, DonationPostApproval, DonationPostPicture, DonationReport, DonationReportPicture, Location, LocationState, SupplyType, User, UserRole
+from .serializers import ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer, CivilianFromUserSerializer, LocationSerializer, PostSerializer, ReportSerializer, SupplyTypeSerializer, UserSerializer
 
 # Create your views here.
 LIMIT_REPORT = 5
 LIMIT_REPORT_DAY = 10
 LIMIT_APPROVAL = 3
+
 class UserViewSet(ViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -62,16 +58,6 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
         request = super().initialize_request(request, *args, **kwargs)
         self.action = self.action_map.get(request.method.lower())
         print(request.content_type)
-        if request.method in ['POST'] and self.action == 'add_picture':
-            request.parsers = [MultiPartParser(), FileUploadParser()]
-        else:
-            request.parsers = [JSONParser()]
-        return request
-
-    def initialize_request(self, request, *args, **kwargs):
-        request = super().initialize_request(request, *args, **kwargs)
-        self.action = self.action_map.get(request.method.lower())
-        print(request.content_type)
         if request.method in ['POST'] and self.action in ['add_picture','report']:
             request.parsers = [MultiPartParser(), FileUploadParser()]
         else:
@@ -86,21 +72,11 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
         return [IsAuthenticated()]
 
     def get_queryset(self):
-        q = self.queryset;
+        q = self.queryset
         kw = self.request.query_params.get('kw')
         if kw is not None:
             q = q.filter(Q(title__icontains=kw)|Q(content__icontains=kw))
         return q
-
-    def initialize_request(self, request, *args, **kwargs):
-        request = super().initialize_request(request, *args, **kwargs)
-        self.action = self.action_map.get(request.method.lower())
-        print(request.content_type)
-        if request.method in ['POST'] and self.action == 'report':
-            request.parsers = [MultiPartParser(), FileUploadParser()]
-        else:
-            request.parsers = [JSONParser()]
-        return request
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
@@ -111,7 +87,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
             locations = request.data.pop("locations")
 
         supply_type = SupplyType.objects.filter(pk=request.data.pop('supply_type')).first()
-        if(supply_type == None):
+        if supply_type is None:
             return Response("Không tìm thấy loại hình quyên góp", status=status.HTTP_200_OK)
         try:
             with transaction.atomic():
@@ -324,7 +300,15 @@ class LocationViewSet(ViewSet, generics.ListAPIView):
     serializer_class = LocationSerializer
     # permission_classes = [IsAuthenticated]
 
-    @action(methods = ["GET"], detail= False)
+    @action(methods=["GET"], detail=False)
     def in_need(self, request):
         qs = Location.objects.filter(active=True).exclude(status=LocationState.NORMAL)
-        return Response(LocationSerializer(qs, context={"request": request}).data, status = status.HTTP_200_OK)
+        return Response(LocationSerializer(qs, context={"request": request}).data, status=status.HTTP_200_OK)
+
+
+class ArticleViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+
+    def get_permissions(self):
+        return [AllowAny()]
