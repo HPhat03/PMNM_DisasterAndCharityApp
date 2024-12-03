@@ -3,11 +3,18 @@ from lib2to3.fixes.fix_input import context
 from cloudinary.uploader import upload
 from django.db.models import  Q
 from rest_framework import status
+import json
+
+from django.db.models import  Q
+from rest_framework import status, parsers
+from lib2to3.fixes.fix_input import context
+from cloudinary.uploader import upload
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.core.files.storage import FileSystemStorage
 from .models import *
 from .serializers import *
 from .permissions import *
@@ -49,6 +56,17 @@ class UserViewSet(ViewSet):
 class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
     queryset = DonationCampaign.objects.filter(active=True)
     serializer_class = CampagnSerializer
+    parser_classes = [parsers.MultiPartParser, ]
+
+    def initialize_request(self, request, *args, **kwargs):
+        request = super().initialize_request(request, *args, **kwargs)
+        self.action = self.action_map.get(request.method.lower())
+        print(request.content_type)
+        if request.method in ['POST'] and self.action == 'add_picture':
+            request.parsers = [MultiPartParser(), FileUploadParser()]
+        else:
+            request.parsers = [JSONParser()]
+        return request
 
     def initialize_request(self, request, *args, **kwargs):
         request = super().initialize_request(request, *args, **kwargs)
@@ -64,7 +82,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
         if self.action in ['approve','add_picture']:
             return [AllowAny()]
         if self.action == 'create':
-            return [IsCharityOrg()]
+            return [IsAuthenticated()]
         return [IsAuthenticated()]
 
     def get_queryset(self):
@@ -73,6 +91,16 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
         if kw is not None:
             q = q.filter(Q(title__icontains=kw)|Q(content__icontains=kw))
         return q
+
+    def initialize_request(self, request, *args, **kwargs):
+        request = super().initialize_request(request, *args, **kwargs)
+        self.action = self.action_map.get(request.method.lower())
+        print(request.content_type)
+        if request.method in ['POST'] and self.action == 'report':
+            request.parsers = [MultiPartParser(), FileUploadParser()]
+        else:
+            request.parsers = [JSONParser()]
+        return request
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
