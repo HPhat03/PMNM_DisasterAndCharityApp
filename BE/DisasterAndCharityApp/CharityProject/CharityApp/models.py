@@ -41,6 +41,8 @@ class User(AbstractUser):
     gender = models.BooleanField(null=False, default=True)
     avatar = CloudinaryField('image', default= None, null=True)
     role = enum.EnumField(UserRole, default=UserRole.CIVILIAN)
+    bank = models.CharField(max_length=100, default="Vietcombank")
+    bank_id = models.CharField(max_length=20, default="12345678910")
 
     @property
     def name(self):
@@ -57,6 +59,9 @@ class Civilian (models.Model):
 class Admin (models.Model):
     user_info = models.OneToOneField(User,related_name="admin_info",on_delete=models.CASCADE, primary_key=True, null=False)
 
+    def __str__(self):
+        return self.user_info.username
+
 class CharityOrg (models.Model):
     user_info = models.OneToOneField(User,related_name="charity_org_info",on_delete=models.CASCADE, primary_key=True, null=False)
     is_verified = models.BooleanField(default=False)
@@ -64,6 +69,8 @@ class CharityOrg (models.Model):
     civilian_id_date = models.DateField()
     badge = models.ForeignKey('Badge', related_name='orgs', on_delete=models.SET_NULL, null=True)
 
+    def __str__(self):
+        return self.user_info.username;
 class Chat (BaseModel):
     civilian = models.ForeignKey(Civilian,on_delete=models.CASCADE, null= False, related_name="chat")
     org = models.ForeignKey(CharityOrg, on_delete=models.CASCADE, null= False, related_name="chat")
@@ -73,10 +80,28 @@ class Badge (BaseModel):
     tittle = models.CharField(max_length=100)
     condition = models.CharField(max_length=100)
 
+class DonationPost(BaseModel):
+    civilian = models.ForeignKey(Civilian, on_delete=models.CASCADE, related_name="posts")
+    content = models.TextField()
+    supply_type = models.ForeignKey("SupplyType", on_delete=models.CASCADE, related_name="posts", default=1)
+
+class DonationPostPicture(BaseModel):
+    post = models.ForeignKey(DonationPost, on_delete=models.CASCADE, related_name="pictures")
+    picture = CloudinaryField('image', default= None, null=True)
+
+class DonationPostApproval(models.Model):
+    admin = models.ForeignKey(Admin, on_delete=models.CASCADE, related_name='confirmed_post')
+    post = models.OneToOneField(DonationPost, on_delete=models.CASCADE, primary_key=True)
+    priority = models.IntegerField(default= 1)
+    created_date = models.DateField(auto_now_add=True)
+    updated_date = models.DateField(auto_now=True)
+    active = models.BooleanField(default=True)
+
 class DonationCampaign (BaseModel):
     org = models.ForeignKey(CharityOrg, on_delete=models.CASCADE, null=False, related_name="campaign")
     title = models.CharField(max_length=50, default="ABC")
     content = models.TextField()
+    supply_type = models.ForeignKey("SupplyType", on_delete=models.CASCADE, related_name="campaigns", default=1)
     expected_charity_start_date = models.DateField()
     expected_charity_end_date = models.DateField()
     is_permitted = models.BooleanField(default=False)
@@ -103,6 +128,10 @@ class ContentPicture (BaseModel):
 
 class SupplyType (BaseModel):
     type = models.CharField(max_length=10)
+    unit = models.CharField(max_length=10, default="Kg")
+    
+    def __str__(self):
+        return f'{self.type} ({self.unit})'
 
 class CampaignLocation (BaseModel):
     class Meta:
@@ -120,14 +149,11 @@ class Stock (BaseModel):
     amount = models.IntegerField()
     wareHouse = models.ForeignKey(Storage,on_delete= models.CASCADE, null=False,related_name="stock")
 
-class Approval (models.Model):
+class Approval (BaseModel):
     admin = models.ForeignKey(Admin, on_delete=models.CASCADE, related_name= 'approvals')
-    donation = models.OneToOneField(DonationCampaign, on_delete=models.CASCADE, primary_key=True)
+    donation = models.ForeignKey(DonationCampaign, on_delete=models.CASCADE)
     time_id = models.IntegerField(null=False, default=1)
-    is_approved = models.BooleanField(null=False)
-    created_date = models.DateField(auto_now_add=True)
-    updated_date = models.DateField(auto_now=True)
-    active = models.BooleanField(default=True)
+    is_approved = models.BooleanField(null=True)
     is_final = models.BooleanField(default=False)
 
 class Confimation (models.Model):
