@@ -145,6 +145,34 @@ class Migration(migrations.Migration):
                 ('location', models.CharField(max_length=45, unique=True)),
                 ('area', models.IntegerField(default=1)),
                 ('current_status', django_enumfield.db.fields.EnumField(default=0, enum=CharityApp.models.LocationState)),
+                ('latitude', models.DecimalField(decimal_places=6, default=0.0, max_digits=9)),
+                ('longitude', models.DecimalField(decimal_places=6, default=0.0, max_digits=9)),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='SupplyType',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('type', models.CharField(max_length=10)),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='SupplyType',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('type', models.CharField(max_length=10)),
             ],
             options={
                 'abstract': False,
@@ -194,9 +222,19 @@ class Migration(migrations.Migration):
                 ('created_date', models.DateField(auto_now_add=True)),
                 ('updated_date', models.DateField(auto_now=True)),
                 ('active', models.BooleanField(default=True)),
+<<<<<<< HEAD
                 ('paid_for', models.CharField(max_length=100)),
                 ('paid', models.IntegerField()),
                 ('report', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='details', to='CharityApp.donationreport')),
+=======
+                ('title', models.CharField(default='ABC', max_length=50)),
+                ('content', models.TextField()),
+                ('expected_charity_start_date', models.DateField()),
+                ('expected_charity_end_date', models.DateField()),
+                ('is_permitted', models.BooleanField(default=False)),
+                ('enclosed_article', models.ManyToManyField(related_name='enclosed', to='CharityApp.article')),
+                ('org', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='campaign', to='CharityApp.charityorg')),
+>>>>>>> 9d3700b5cf5add92d1f4a370356001467d875762
             ],
             options={
                 'abstract': False,
@@ -206,35 +244,6 @@ class Migration(migrations.Migration):
             model_name='donationreport',
             name='campaign',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='CharityApp.donationcampaign'),
-        ),
-        migrations.CreateModel(
-            name='ContentPicture',
-            fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('created_date', models.DateField(auto_now_add=True)),
-                ('updated_date', models.DateField(auto_now=True)),
-                ('active', models.BooleanField(default=True)),
-                ('type', django_enumfield.db.fields.EnumField(default=0, enum=CharityApp.models.ContentPictureType)),
-                ('path', cloudinary.models.CloudinaryField(default=None, max_length=255, null=True, verbose_name='image')),
-                ('donation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pictures', to='CharityApp.donationcampaign')),
-            ],
-            options={
-                'abstract': False,
-            },
-        ),
-        migrations.CreateModel(
-            name='DonationReportPicture',
-            fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False)),
-                ('created_date', models.DateField(auto_now_add=True)),
-                ('updated_date', models.DateField(auto_now=True)),
-                ('active', models.BooleanField(default=True)),
-                ('path', models.CharField(max_length=20)),
-                ('report', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pictures', to='CharityApp.donationreport')),
-            ],
-            options={
-                'abstract': False,
-            },
         ),
         migrations.CreateModel(
             name='CampaignLocation',
@@ -253,6 +262,87 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='DonationReport',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('total_used', models.IntegerField()),
+                ('total_left', models.IntegerField(default=0)),
+                ('campaign', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='CharityApp.donationcampaign')),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='ContentPicture',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('type', django_enumfield.db.fields.EnumField(default=0, enum=CharityApp.models.ContentPictureType)),
+                ('path', cloudinary.models.CloudinaryField(default=None, max_length=255, null=True, verbose_name='image')),
+                ('donation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pictures', to='CharityApp.donationcampaign')),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+<<<<<<< HEAD
+=======
+            name='DetailDonationReport',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('paid_for', models.CharField(max_length=100)),
+                ('paid', models.IntegerField()),
+                ('report', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='details', to='CharityApp.donationreport')),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+>>>>>>> 9d3700b5cf5add92d1f4a370356001467d875762
+            name='DonationReportPicture',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('path', models.CharField(max_length=20)),
+                ('report', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pictures', to='CharityApp.donationreport')),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+<<<<<<< HEAD
+            name='CampaignLocation',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('expected_fund', models.IntegerField()),
+                ('current_fund', models.IntegerField(default=0)),
+                ('campaign', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='locations', to='CharityApp.donationcampaign')),
+                ('location', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='campaigns', to='CharityApp.location')),
+            ],
+            options={
+                'unique_together': {('campaign', 'location')},
+            },
+        ),
+        migrations.CreateModel(
+=======
+>>>>>>> 9d3700b5cf5add92d1f4a370356001467d875762
             name='StatInfo',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False)),
@@ -263,6 +353,38 @@ class Migration(migrations.Migration):
                 ('label', models.CharField(max_length=40)),
                 ('number', models.FloatField()),
                 ('location', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stat_history', to='CharityApp.location')),
+<<<<<<< HEAD
+=======
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='Storage',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('address', models.CharField(max_length=100)),
+                ('location', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='storage', to='CharityApp.location')),
+            ],
+            options={
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
+            name='Stock',
+            fields=[
+                ('id', models.AutoField(primary_key=True, serialize=False)),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('amount', models.IntegerField()),
+                ('wareHouse', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stock', to='CharityApp.storage')),
+                ('type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stocks', to='CharityApp.supplytype')),
+>>>>>>> 9d3700b5cf5add92d1f4a370356001467d875762
             ],
             options={
                 'abstract': False,
@@ -355,6 +477,22 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+<<<<<<< HEAD
+=======
+            name='Approval',
+            fields=[
+                ('donation', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='CharityApp.donationcampaign')),
+                ('time_id', models.IntegerField(default=1)),
+                ('is_approved', models.BooleanField()),
+                ('created_date', models.DateField(auto_now_add=True)),
+                ('updated_date', models.DateField(auto_now=True)),
+                ('active', models.BooleanField(default=True)),
+                ('is_final', models.BooleanField(default=False)),
+                ('admin', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='approvals', to='CharityApp.admin')),
+            ],
+        ),
+        migrations.CreateModel(
+>>>>>>> 9d3700b5cf5add92d1f4a370356001467d875762
             name='Confimation',
             fields=[
                 ('report', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='CharityApp.donationreport')),
