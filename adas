@@ -1,0 +1,171 @@
+[33mcommit c856c837456933b3f0e650c459ea6f31883e884d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mphat[m[33m)[m
+Author: xuanphat11112003 <2151050316phat@ou.edu.vn>
+Date:   Wed Dec 4 02:26:54 2024 +0700
+
+    vnpay || gui tien ho tro
+
+[33mcommit cd142c98e03379130c8979348f84dea7269219b9[m
+Merge: 7a29e95 1fe507a
+Author: xuanphat11112003 <2151050316phat@ou.edu.vn>
+Date:   Wed Dec 4 02:23:01 2024 +0700
+
+    Merge branch 'phat' of https://github.com/HPhat03/PMNM_DisasterAndCharityApp into phat
+
+[33mcommit 7a29e953f8caa0802c5e3d4a53842956edf120e8[m
+Author: xuanphat11112003 <2151050316phat@ou.edu.vn>
+Date:   Wed Dec 4 02:15:43 2024 +0700
+
+    thanh toan vnpay va chuyen tien cuu tro
+
+[33mcommit 1fe507ae432c153b28e902c09eaccd22fc9de96a[m[33m ([m[1;31morigin/phat[m[33m)[m
+Merge: 9d3700b a521691
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Tue Dec 3 11:54:36 2024 +0700
+
+    Merge pull request #2 from HPhat03/main
+    
+    merge to phat
+
+[33mcommit a52169160948e0a8342ab5983cfd34a364bb8b0b[m
+Merge: 3b49426 e951db2
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Tue Dec 3 11:50:27 2024 +0700
+
+    Merge branch 'main' of https://github.com/HPhat03/ICPC_DisasterAndCharityApp
+
+[33mcommit 3b49426362b7fc08cfba2e8490b605be69ecceec[m
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Tue Dec 3 11:48:08 2024 +0700
+
+    ready to merge
+
+[33mcommit e951db25afc1e9b83228f4c14608a24acea79e80[m
+Merge: 2ee204d 9d3700b
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Tue Dec 3 11:38:34 2024 +0700
+
+    Merge branch 'phat' of https://github.com/HPhat03/PMNM_DisasterAndCharityApp
+
+[33mcommit 9d3700b5cf5add92d1f4a370356001467d875762[m
+Author: xuanphat11112003 <2151050316phat@ou.edu.vn>
+Date:   Tue Dec 3 02:46:35 2024 +0700
+
+    chinh lai cai ay roi á
+
+[33mcommit 52474c3598b03a2ce19752fa6bfc88a372a4371f[m
+Author: xuanphat11112003 <2151050316phat@ou.edu.vn>
+Date:   Tue Dec 3 02:38:30 2024 +0700
+
+    Merge remote-tracking branch 'origin' into phat
+
+[33mcommit 8c61fc96b6592f1fb870ff628deed16917e2493a[m
+Author: xuanphat11112003 <2151050316phat@ou.edu.vn>
+Date:   Tue Dec 3 02:19:39 2024 +0700
+
+    fix api bao cao su dung tien chien dich
+
+[33mcommit 2ee204dafb2eaf9c17df8af8c81664970c24abd4[m
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Tue Dec 3 01:53:23 2024 +0700
+
+    admin modifier
+
+[33mcommit 39aa2b14cf50e7d2636491812130d6c7163f156d[m
+Author: xuanphat11112003 <2151050316phat@ou.edu.vn>
+Date:   Sun Dec 1 20:00:44 2024 +0700
+
+    push code moi
+
+[33mcommit 6fcbb72218ff83f1c68afbb11b125ea11a151558[m[33m ([m[1;32mmain[m[33m)[m
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Sun Dec 1 18:35:49 2024 +0700
+
+    Done Campaign Registery
+
+[33mcommit d6d116544573141ce64d0c3389972aa15e8c560e[m
+Merge: ba48a33 d3e119b
+Author: xuanphat11112003 <2151050316phat@ou.edu.vn>
+Date:   Sat Nov 30 21:00:09 2024 +0700
+
+    merge code
+
+[33mcommit ba48a3332f9c3a40dcfef9003711ab963022c0d9[m
+Author: xuanphat11112003 <2151050316phat@ou.edu.vn>
+Date:   Sat Nov 30 20:44:04 2024 +0700
+
+    giao dien admin
+
+[33mcommit d3e119b5ae99a50053c6bdcab236d7a733113f66[m
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Sat Nov 30 16:51:20 2024 +0700
+
+    Models defined
+
+[33mcommit 7dff2b86be521bd35ae40219a9bf2f01626d573f[m
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Sat Nov 30 14:39:51 2024 +0700
+
+    source deletion
+
+[33mcommit b59481b6483f3f810b978613048d830329b6fe0f[m
+Merge: e7a99e5 79acf88
+Author: Quy Thanh <59784983+quythanh@users.noreply.github.com>
+Date:   Fri Nov 29 10:00:24 2024 +0700
+
+    Merge pull request #1 from quythanh/main
+    
+    Create LICENSE
+
+[33mcommit 79acf886ccf85fed2c1f66c540f1b0da4cddb176[m
+Author: Quy Thanh <59784983+quythanh@users.noreply.github.com>
+Date:   Fri Nov 29 09:59:36 2024 +0700
+
+    Create LICENSE
+
+[33mcommit e7a99e5f64e54bd229e1b726a47097df63ca59ab[m
+Author: phatmai <phatmai.in@actbrain-vn.com>
+Date:   Thu Nov 28 18:41:20 2024 +0700
+
+    init
+
+[33mcommit f28075ce204edf80001988c87c07aa6443dd19cc[m
+Author: phatmai <phatmai.in@actbrain-vn.com>
+Date:   Thu Nov 28 16:32:47 2024 +0700
+
+    campagn report and confirm
+
+[33mcommit e0630a5c58a339b1e976bc920f06d0f46ac58bf7[m
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Thu Nov 28 00:12:51 2024 +0700
+
+    campaign init api
+
+[33mcommit b22ba204fd9a9d68d77ea84bcb7568c450aeaa8b[m
+Author: phatmai <phatmai.in@actbrain-vn.com>
+Date:   Wed Nov 27 16:26:23 2024 +0700
+
+    user registery
+
+[33mcommit 8868f2aee45034d5d19fd196ca707a2e526c559e[m
+Author: phatmai <phatmai.in@actbrain-vn.com>
+Date:   Wed Nov 27 09:22:15 2024 +0700
+
+    'test'
+
+[33mcommit 8134140ae146ebdf8749ed4ab306fbbb23d19ce9[m
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Tue Nov 26 00:40:15 2024 +0700
+
+    Requirement
+
+[33mcommit c2e5c8d185d2a25e305a6b25f9665de9e18dfbb5[m
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Mon Nov 25 23:49:03 2024 +0700
+
+    models initialized
+
+[33mcommit 2505ba1963f2ae4397eb938f7ce0ff25750306ca[m
+Author: HPhat03 <107537439+HPhat03@users.noreply.github.com>
+Date:   Mon Nov 25 23:47:04 2024 +0700
+
+    first commit
