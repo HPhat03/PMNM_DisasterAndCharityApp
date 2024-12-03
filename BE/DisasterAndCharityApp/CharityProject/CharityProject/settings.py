@@ -205,3 +205,7 @@ REST_FRAMEWORK = {
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     )
 }
+
+#GOOGLE CLOUD
+API_KEY = "AIzaSyDFtLcvpDX3QIJX6u1jtMNoge_TaKRZP14"
+image_url = f'https://vision.googleapis.com/v1/images:annotate?key={API_KEY}'

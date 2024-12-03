@@ -11,6 +11,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import *
 from .serializers import *
 from .permissions import *
+import json
 
 # Create your views here.
 LIMIT_REPORT = 5
@@ -53,7 +54,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
         request = super().initialize_request(request, *args, **kwargs)
         self.action = self.action_map.get(request.method.lower())
         print(request.content_type)
-        if request.method in ['POST'] and self.action == 'add_picture':
+        if request.method in ['POST'] and self.action in ['add_picture','report']:
             request.parsers = [MultiPartParser(), FileUploadParser()]
         else:
             request.parsers = [JSONParser()]
@@ -141,31 +142,45 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView):
         return Response(res, status=status.HTTP_200_OK)
 
     @transaction.atomic()
-    @action(methods = ['POST'], detail = True)
+    @action(methods=['POST'], detail=True)
     def report(self, request, pk=None):
         res = "Not OK"
-        campagn = DonationCampaign.objects.filter(pk=pk, is_permitted = True).first()
+        print(pk)
+        campagn = DonationCampaign.objects.filter(pk=pk).first()
+        print(campagn)
         if campagn is None:
             return Response("Không tồn tại", status=status.HTTP_200_OK)
-        if DonationReport.objects.filter(donation=campagn).count() >= LIMIT_REPORT:
+        if DonationReport.objects.filter(campaign=campagn).count() >= LIMIT_REPORT:
             return Response("Bạn đã hết số lần nộp báo cáo", status=status.HTTP_200_OK)
-        if date.today() - campagn.expected_charity_end_date > LIMIT_REPORT_DAY:
+        if (date.today() - campagn.expected_charity_end_date).days > LIMIT_REPORT_DAY:
             return Response("Bạn đã quá hạn để báo cáo", status=status.HTTP_200_OK)
         with transaction.atomic():
-            rp = DonationReport(donation=campagn)
+            rp = DonationReport(campaign=campagn)
+            rp.total_used = 0
             rp.save()
             tmp = 0
-            for d in request.data['details']:
+            details = json.loads(request.data['details'])
+            for d in details:
                 dt = DetailDonationReport(**d)
-                tmp+= dt.paid
+                dt.report = rp
+                tmp += dt.paid
                 dt.save()
+            for file in request.FILES.getlist('file'):
+                # fs = FileSystemStorage()
+                # file_name = fs.save(file.name, file)
+                # file_url = fs.url(file_name)
+                cloudinary = upload(file)
+                dp = DonationReportPicture(report=rp, path=cloudinary['secure_url'])
+                dp.save()
             rp.total_used = tmp
-            rp.total_left = campagn.current_fund - tmp
+            fund = sum(location.current_fund for location in campagn.locations.all())
+            rp.total_left = fund - tmp
             rp.save()
-            if rp.total_used == 0: 
+
+            if rp.total_used == 0:
                 return Response("Số tiền bạn quyên góp là 0, Cảnh Báo", status=status.HTTP_200_OK)
             if rp.total_left > 500000:
-                return Response("Số tiền bạn quyên góp còn dư quá nhiều, Cảnh Báo", status=status.HTTP_200_OK)            
+                return Response("Số tiền bạn quyên góp còn dư quá nhiều, Cảnh Báo", status=status.HTTP_200_OK)
         return Response(res, status=status.HTTP_200_OK)
 
     @transaction.atomic()
