@@ -206,7 +206,17 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'
 }
+import os
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'CharityApp/static/'),
+)
+STATIC_URL = '/static/'
+# VNPAY CONFIG
+VNPAY_RETURN_URL = 'http://localhost:8000/payment_return'  # get from config
+VNPAY_PAYMENT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'  # get from config
+VNPAY_API_URL = 'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction'
+VNPAY_TMN_CODE = 'HMACWXVW'  # Website ID in VNPAY System, get from config
+VNPAY_HASH_SECRET_KEY = 'H5RWZX5W6DB9VVQAPTYLJ3KFGSLQEGKQ'  # Secret key for
 
 #GOOGLE CLOUD
-import os
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'

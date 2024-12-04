@@ -7,6 +7,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from datetime import date
 from django_enumfield import  enum
+from django import forms
+
 
 # Create your models here.
 #ENUM
@@ -220,3 +222,11 @@ class CompanySetting(BaseModel):
     logo = models.CharField(max_length=20)
     stat_data_source = models.CharField(max_length= 100)
     is_chosen = models.BooleanField(default=False)
+
+class PaymentForm(forms.Form):
+    order_id = forms.CharField(max_length=250)
+    order_type = forms.CharField(max_length=20)
+    amount = forms.IntegerField()
+    order_desc = forms.CharField(max_length=100)
+    bank_code = forms.CharField(max_length=20, required=False)
+    language = forms.CharField(max_length=2)

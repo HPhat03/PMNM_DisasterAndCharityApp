@@ -1,8 +1,7 @@
-from os.path import basename
-
 from django.urls import path, include
-from . import views, admin
 from rest_framework.routers import DefaultRouter
+
+from . import views
 
 router = DefaultRouter()
 router.register('user', views.UserViewSet, basename="user")
@@ -15,4 +14,10 @@ urlpatterns = [
     path('', include(router.urls)),
     path("oauth/start/", views.start_oauth, name="start_oauth"),
     path("oauth/callback/", views.oauth_callback, name="oauth_callback"),
+    path('pay', views.index, name='index'),
+    path('payment', views.payment, name='payment'),
+    path('payment_ipn', views.payment_ipn, name='payment_ipn'),
+    path('payment_return', views.payment_return, name='payment_return'),
+    path('query', views.query, name='query'),
+    path('refund', views.refund, name='refund'),
 ]
