@@ -20,8 +20,9 @@ The application facilitates rapid information dissemination, enhances connectivi
     - [Prerequisites](#prerequisites)
     - [With Docker](#with-docker-recommended)
     - [Manually](#manually)
-3. [Author](#author)
-4. [LICENSE](#license)
+3. [Contributing](#contributing)
+4. [Author](#author)
+5. [LICENSE](#license)
 
 # Introduction
 
@@ -104,6 +105,20 @@ python3 manage.py migrate
 
 ...
 
+# Contributing
+
+## Contributing Guidelines
+
+Read through our [contributing guidelines][contributing] to learn about our submission process, coding rules, and more.
+
+## Want to Help?
+
+Want to report a bug, contribute some code, or improve the documentation? Excellent! Read up on our guidelines for [contributing][contributing] and then check out one of our issues labeled as <kbd>[help wanted](https://github.com/HPhat03/PMNM_DisasterAndCharityApp/labels/help%20wanted)</kbd> or <kbd>[good first issue](https://github.com/HPhat03/PMNM_DisasterAndCharityApp/labels/good%20first%20issue)</kbd>.
+
+## Code of Conduct
+
+Help us keep the app open and inclusive. Please read and follow our [Code of Conduct][codeofconduct].
+
 # Author
 
 -   [Mai Hoang Phat](https://github.com/HPhat03)
@@ -113,3 +128,7 @@ python3 manage.py migrate
 # License
 
 This project is licensed under the terms of the [Apache License 2.0](http://www.apache.org/licenses/) license.
+
+
+[codeofconduct]: CODE_OF_CONDUCT.md
+[contributing]: CONTRIBUTING.md
