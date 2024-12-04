@@ -113,7 +113,7 @@ python3 manage.py migrate
 
 - Start the backend server:
 ```bash
-python3 manage.py migrate
+python3 manage.py runserver
 ```
 
 3. **Set Up Appsmith**
