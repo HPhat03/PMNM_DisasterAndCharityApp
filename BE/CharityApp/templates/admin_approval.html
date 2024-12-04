@@ -1,0 +1,93 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h2>Phê duyệt và xác nhận <strong> > </strong> Hoạt động kêu gọi quyên góp của tổ chức</h2>
+<hr/>
+<p>Xem xét và xét duyệt các chiến dịch thiện nguyện, các hoạt động kêu gọi quyên góp của các tổ chức thiện nguyện.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Tổ chức</th>
+      <th>Tên hoạt động, chiến dịch</th>
+      <th>Trạng thái</th>
+      <th></th> <!-- Cột mới cho nút bấm -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for x in registeries %}
+      <tr>
+      <td>{{x.id}}</td>
+      <td>{{x.org.user_info.name}}</td>
+      <td>{{x.title}}</td>
+      <td><span class="not-permitted">Đang chờ phê duyệt</span></td>
+      <td><button onclick="approveCampaign({{x.id}})">Phê duyệt</button></td> <!-- Nút bấm -->
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p>{{registeries.count}} donation campaigns</p>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+  }
+
+  header {
+    background-color: #f0f0f0;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  nav a {
+    text-decoration: none;
+    margin-right: 10px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 50px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+
+  .permitted {
+    color: green;
+  }
+
+  .not-permitted {
+    color: red;
+  }
+
+  button {
+    padding: 5px 10px;
+    background-color: #4CAF50; /* Màu xanh */
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #45a049; /* Màu xanh đậm hơn khi hover */
+  }
+</style>
+
+<script>
+  function approveCampaign(id) {
+    window.location.href = `/admin/org_approval/${id}/`
+  }
+</script>
+{% endblock %}
