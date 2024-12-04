@@ -53,10 +53,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 ]
-
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 ROOT_URLCONF = 'CharityProject.urls'
 
 TEMPLATES = [
@@ -81,7 +81,7 @@ TEMPLATES = [
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '3f2f-27-64-68-99.ngrok-free.app', 'pmnm.quythanh.tk']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'ddd4-27-64-68-99.ngrok-free.app', 'pmnm.quythanh.tk']
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -208,5 +208,5 @@ REST_FRAMEWORK = {
 }
 
 #GOOGLE CLOUD
-API_KEY = "AIzaSyDFtLcvpDX3QIJX6u1jtMNoge_TaKRZP14"
-image_url = f'https://vision.googleapis.com/v1/images:annotate?key={API_KEY}'
+import os
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'

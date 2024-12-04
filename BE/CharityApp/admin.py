@@ -1,4 +1,5 @@
 from lib2to3.fixes.fix_input import context
+from tkinter.font import names
 
 from django.contrib import admin
 from django.urls import path
@@ -31,6 +32,21 @@ def ApprovalReportPage(request):
         "reports" : reports
     }
     return render(request, 'admin_report_approval.html', context)
+
+def ApprovalPostPage(request):
+    posts = DonationPost.objects.filter(donationpostapproval=None)
+    context = {
+        "posts" : posts
+    }
+    return render(request, 'admin_post_approval.html', context)
+
+def DetailPostApprovalePage(request, id = None):
+    detail = DonationPost.objects.filter(pk=id).first()
+    print(detail.pictures.all())
+    context = {
+        "detail": detail,
+    }
+    return render(request, 'admin_detail_post_approval.html', context)
 class MyAdminPage(admin.AdminSite):
     site_header = "THE ANTIBUG ADMIN"
     change_list_template = 'admin_approval.html'
@@ -40,6 +56,8 @@ class MyAdminPage(admin.AdminSite):
             path('org_approval/', self.admin_view(ApprovalPage), name='Campaign Approval'),
             path('org_approval/<int:id>/', self.admin_view(DetailApprovalePage), name='Campaign Approval'),
             path('report_approval/', self.admin_view(ApprovalReportPage), name='Report Approval'),
+            path('post_approval/', self.admin_view(ApprovalPostPage), name='Post Approval'),
+            path('post_approval/<int:id>/', self.admin_view(DetailPostApprovalePage), name='Detail Post Approval'),
         ]
         return custom_urls + urls
 
@@ -79,7 +97,7 @@ class MyAdminPage(admin.AdminSite):
                 {
                     'name': "Hoạt động kêu gọi quyên góp cá nhân",
                     'object_name': ('Registery Approval'),
-                    'admin_url': '/admin/approval/',
+                    'admin_url': '/admin/post_approval/',
                     'name_plural': 'Campaign Approvals'
                 },
                 {

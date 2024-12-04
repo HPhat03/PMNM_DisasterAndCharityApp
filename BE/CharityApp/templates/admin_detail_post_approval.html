@@ -1,0 +1,119 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h2>Phê duyệt và xác nhận <strong> > </strong> Hoạt động kêu gọi quyên góp của tổ chức</h2>
+<hr/>
+<p>Xem xét và xét duyệt các chiến dịch thiện nguyện, các hoạt động kêu gọi quyên góp của các tổ chức thiện nguyện.</p>
+
+<div class="campaign-card">
+    <div class="status active">Sẵn sàng để kêu gọi</div>
+
+    <div class="info">
+        <p><strong>Người dùng:</strong> {{detail.civilian.user_info.name}}</p>
+        <p><strong>Tạo ngày:</strong> {{detail.created_date}}</p>
+
+        <p><strong>Nội dung:</strong></p>
+        <p>{{detail.content|safe}}</p>
+        {% for pic in detail.pictures.all%}
+        <img style="width: 20%" src="{{pic.picture}}"/>
+        {% endfor %}
+        <p><strong>Yêu cầu quyên góp:</strong> Hiện Kim (VND)</p>
+    </div>
+    <p><strong>Theo bạn đánh giá mức độ nghiêm trọng của tình hình này như thế nào</strong></p>
+     <select id="priority">
+         <option value=0>---</option>
+        <option value=1>ít nghiêm trọng</option>
+        <option value=2>nghiêm trọng</option>
+        <option value=3>rất nghiêm trọng</option>
+         <option value=4>cực kì nghiêm trọng</option>
+     </select>
+    <button class="history" onclick="approvePost({{detail.id}})">Phê duyệt</button>
+</div>
+
+<style>
+    .campaign-card {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      margin-top: 50px;
+  }
+
+  .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+  }
+
+  .active {
+      background-color: lightgreen;
+  }
+
+  .close, .history {
+      float: right;
+      margin-left: 10px;
+      padding: 5px 10px;
+      border: none;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      cursor: pointer;
+  }
+
+  .info {
+      margin-top: 20px;
+  }
+
+  .permitted {
+      color: red;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+</style>
+
+<script>
+    function approvePost(id) {
+
+       priority = document.getElementById("priority").value
+       if(priority == 0){
+           alert("Vui lòng đánh giá tình hình")
+           return
+       }
+
+      data = {
+        "cur_admin": {{request.user.id}},
+        "priority": priority
+      }
+      fetch(`/donation_post/${id}/approve/`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => {
+          console.log('Success:', data);
+          window.location.href = '/admin/'
+      })
+      .catch((error) => {
+          alert(error);
+      });
+
+    }
+</script>
+{% endblock %}
