@@ -41,7 +41,22 @@ The application facilitates rapid information dissemination, enhances connectivi
 
 ## Project Structure
 
-...
+The project is organized into the following structure:
+
+```
+PMNM_DisasterAndCharityApp/
+├── BE/                  # Backend folder (Django server)
+│   ├── manage.py        # Entry point for the Django server
+│   ├── requirements.txt # Python dependencies for the backend
+│   ├── Dockerfile       # Docker configuration for the backend
+│   ├── db.sqlite3       # SQLite database file (for development)
+│   ├── CharityProject/  # Django project settings and configurations
+│   ├── CharityApp/      # Application-specific logic for the backend
+│   └── templates/       # HTML templates for the backend
+├── FE/                  # Frontend folder (Appsmith)
+│   └── app.json         # Appsmith application configuration
+└── docker-compose.yml   # Docker Compose file to orchestrate both backend and frontend
+```
 
 # How to install
 
