@@ -490,7 +490,14 @@ def payment(request):
         else:
             print("Form input not validate")
     else:
-        return render(request, "payment/payment.html", {"title": "Thanh toán"})
+        user_id = request.GET.get('user_id')
+        campaign_id = request.GET.get('campaign_id')
+        type = request.GET.get('type')
+        response = render(request, "payment/payment.html", {"title": "Thanh toán"})
+        response.set_cookie('user_id', user_id, max_age=600)
+        response.set_cookie('campaign_id', campaign_id, max_age=600)
+        response.set_cookie('type', type, max_age=600)
+        return response
 
 
 def payment_ipn(request):
@@ -552,6 +559,16 @@ def payment_return(request):
         vnp_CardType = inputData['vnp_CardType']
         if vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
             if vnp_ResponseCode == "00":
+                uid = request.COOKIES.get('user_id')
+                cid = request.COOKIES.get('campaign_id')
+                type = request.COOKIES.get('type')
+                if type == 'campaign':
+                    Donation.objects.create(civilian_id=uid, campaign_id= cid, donated=amount)
+                    cp = CampaignLocation.objects.filter(pk=cid).first()
+                    cp.current_fund += amount
+                    cp.save()
+                elif type == 'post':
+                    DonationPostHistory.objects.create(user_id=uid,post_id=cid, donated=amount)
                 return render(request, "payment/payment_return.html", {"title": "Kết quả thanh toán",
                                                                "result": "Thành công", "order_id": order_id,
                                                                "amount": amount,

@@ -104,6 +104,11 @@ class DonationPostApproval(models.Model):
     updated_date = models.DateField(auto_now=True)
     active = models.BooleanField(default=True)
 
+class DonationPostHistory(BaseModel):
+    user = models.ForeignKey(Civilian, on_delete=models.CASCADE, null=False, related_name="post_donated")
+    post = models.ForeignKey(DonationPost, on_delete=models.CASCADE, null=False, related_name="donated")
+    donated = models.IntegerField()
+
 class DonationCampaign (BaseModel):
     org = models.ForeignKey(CharityOrg, on_delete=models.CASCADE, null=False, related_name="campaign")
     title = models.CharField(max_length=50, default="ABC")
