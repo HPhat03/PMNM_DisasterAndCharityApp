@@ -5,7 +5,7 @@
 
 # Disaster And Charity App
 
-This application was developed as part of the **Open Source Software - OLP 2024**, with the primary purpose of supporting communities in effectively responding to emergency situations such as natural disasters, pandemics, and other crises. By leveraging the Low-Code Development Platform (LCDP), the project aims to significantly reduce development time while ensuring adaptability and functionality in critical scenarios.
+This application was developed as part of the **[Open Source Software - OLP 2024](https://www.olp.vn/procon-pmmn/ph%E1%BA%A7n-m%E1%BB%81m-ngu%E1%BB%93n-m%E1%BB%9F)**, with the primary purpose of supporting communities in effectively responding to emergency situations such as natural disasters, pandemics, and other crises. By leveraging the Low-Code Development Platform (LCDP), the project aims to significantly reduce development time while ensuring adaptability and functionality in critical scenarios.
 
 The application facilitates rapid information dissemination, enhances connectivity among community members and organizations, and provides tools to aid disaster response and recovery efforts. This project not only demonstrates the potential of low-code technology in real-world applications but also highlights its significance in addressing urgent societal challenges.
 
