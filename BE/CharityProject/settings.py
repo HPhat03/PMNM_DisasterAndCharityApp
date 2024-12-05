@@ -53,10 +53,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 ]
-
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 ROOT_URLCONF = 'CharityProject.urls'
 
 TEMPLATES = [
@@ -81,7 +81,7 @@ TEMPLATES = [
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '3f2f-27-64-68-99.ngrok-free.app', 'pmnm.quythanh.tk']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'ddd4-27-64-68-99.ngrok-free.app', 'pmnm.quythanh.tk']
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -206,6 +206,17 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'
 }
+import os
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'CharityApp/static/'),
+)
+STATIC_URL = '/static/'
+# VNPAY CONFIG
+VNPAY_RETURN_URL = 'http://localhost:8000/payment_return'  # get from config
+VNPAY_PAYMENT_URL = 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'  # get from config
+VNPAY_API_URL = 'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction'
+VNPAY_TMN_CODE = 'HMACWXVW'  # Website ID in VNPAY System, get from config
+VNPAY_HASH_SECRET_KEY = 'H5RWZX5W6DB9VVQAPTYLJ3KFGSLQEGKQ'  # Secret key for
 
 CACHES = {
     'default': {
@@ -215,5 +226,4 @@ CACHES = {
 }
 
 #GOOGLE CLOUD
-API_KEY = "AIzaSyDFtLcvpDX3QIJX6u1jtMNoge_TaKRZP14"
-image_url = f'https://vision.googleapis.com/v1/images:annotate?key={API_KEY}'
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'

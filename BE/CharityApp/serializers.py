@@ -1,5 +1,8 @@
+from dataclasses import fields
+
+from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from .models import Article, CampaignLocation, CharityOrg, Civilian, DonationCampaign, DonationPost, DonationReport, Location, SupplyType, User, UserRole
+from .models import *
 from django.db import transaction
 
 #Dynamid
@@ -22,6 +25,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
             existing = set(self.fields)
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
+
 
 #Custom
 class UserSerializer(DynamicFieldsModelSerializer):
@@ -53,13 +57,11 @@ class UserSerializer(DynamicFieldsModelSerializer):
             return user
         return None
 
-
 class CivilianFromUserSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Civilian
         # fields = "__all__"
         exclude = ('user_info',)
-
 
 class CharityOrgFromUserSerializer(DynamicFieldsModelSerializer):
     class Meta:
@@ -67,43 +69,70 @@ class CharityOrgFromUserSerializer(DynamicFieldsModelSerializer):
         # fields = "__all__"
         exclude = ('user_info',)
 
-
-class CampagnSerializer(DynamicFieldsModelSerializer):
+class CivilianSerializer(DynamicFieldsModelSerializer):
+    user_info = UserSerializer(fields=['id', 'username', 'first_name', 'last_name', 'bank', 'bank_id', 'address'])
     class Meta:
-        model = DonationCampaign
+        model = Civilian
         fields = "__all__"
-
-
+class CharityOrgSerializer(DynamicFieldsModelSerializer):
+    user_info = UserSerializer(fields=['id','username', 'first_name'])
+    class Meta:
+        model = CharityOrg
+        fields = "__all__"
+class ContentPictureSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = ContentPicture
+        fields = "__all__"
 class SupplyTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = SupplyType
         fields = "__all__"
-
 
 class LocationSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Location
         fields = "__all__"
 
+class CampaignLocationDynamidSerializer(DynamicFieldsModelSerializer):
+    location = LocationSerializer(fields=['location'])
+    class Meta:
+        model = CampaignLocation
+        fields = "__all__"
+class ArticleSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = Article
+        fields = "__all__"
+
+class CampagnSerializer(DynamicFieldsModelSerializer):
+    org = CharityOrgSerializer()
+    pictures = ContentPictureSerializer(many=True, fields=['path'])
+    supply_type = SupplyTypeSerializer(fields=['type', 'unit'])
+    locations = CampaignLocationDynamidSerializer(many=True, fields=['location', 'expected_fund', 'current_fund'])
+    enclosed_article = ArticleSerializer(many=True)
+    class Meta:
+        model = DonationCampaign
+        fields = "__all__"
 
 class CampaignLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignLocation
         fields = ['id', 'campaign', 'location', 'expected_fund', 'current_fund']
 
-
 class ReportSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = DonationReport
         fields = "__all__"
-
+class DonationPostPictureSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = DonationPostPicture
+        fields = "__all__"
 
 class PostSerializer(DynamicFieldsModelSerializer):
+    civilian = CivilianSerializer()
+    pictures = DonationPostPictureSerializer(many=True, fields=['picture'])
     class Meta:
         model = DonationPost
         fields = "__all__"
-
-
 class ArticleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Article

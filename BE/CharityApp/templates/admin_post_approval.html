@@ -1,26 +1,26 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<h2>Phê duyệt và xác nhận <strong> > </strong> Hoạt động kêu gọi quyên góp của tổ chức</h2>
+<h2>Phê duyệt và xác nhận <strong> > </strong> Hoạt động kêu gọi quyên góp cá nhân</h2>
 <hr/>
-<p>Xem xét và xét duyệt các chiến dịch thiện nguyện, các hoạt động kêu gọi quyên góp của các tổ chức thiện nguyện.</p>
+<p>Xem xét và xét duyệt các báo cáo chiến dịch thiện nguyện, các hoạt động kêu gọi quyên góp của các tổ chức thiện nguyện.</p>
 
 <table>
   <thead>
     <tr>
       <th>Id</th>
-      <th>Tổ chức</th>
-      <th>Tên hoạt động, chiến dịch</th>
+      <th>Người dùng</th>
+      <th>Ngày tạo</th>
       <th>Trạng thái</th>
       <th></th> <!-- Cột mới cho nút bấm -->
     </tr>
   </thead>
   <tbody>
-    {% for x in registeries %}
+    {% for x in posts %}
       <tr>
       <td>{{x.id}}</td>
-      <td>{{x.org.user_info.name}}</td>
-      <td>{{x.title}}</td>
+      <td>{{x.civilian}}</td>
+        <td>{{x.created_date}}</td>
       <td><span class="not-permitted">Đang chờ phê duyệt</span></td>
       <td><button onclick="approveCampaign({{x.id}})">Phê duyệt</button></td> <!-- Nút bấm -->
     </tr>
@@ -28,7 +28,7 @@
   </tbody>
 </table>
 
-<p>{{registeries.count}} donation campaigns</p>
+<p>{{reports.count}} donation campaigns</p>
 
 <style>
   body {
@@ -87,7 +87,7 @@
 
 <script>
   function approveCampaign(id) {
-    window.location.href = `/admin/org_approval/${id}/`
+    window.location.href = `/admin/post_approval/${id}/`
   }
 </script>
 {% endblock %}
