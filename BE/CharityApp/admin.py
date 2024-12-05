@@ -64,7 +64,7 @@ class MyAdminPage(admin.AdminSite):
     def get_app_list(self, request):
         app_list = super().get_app_list(request)
         print(app_list)
-        company_setting = supply_type = {}
+        company_setting = supply_type = storage = applies = {}
         if(len(app_list) > 0):
             app_list[0]['name'] = 'Quyên góp'
             arr = app_list[0]['models']
@@ -81,6 +81,14 @@ class MyAdminPage(admin.AdminSite):
                     case 'Supply types':
                         supply_type = app_list[0]['models'].pop(mn)
                         supply_type['name'] = "Cài đặt loại hình quyên góp"
+                        mn = mn - 1
+                    case 'Stock applys':
+                        applies = app_list[0]['models'].pop(mn)
+                        applies['name'] = "Đăng kí nhập/xuất quyên góp"
+                        mn = mn - 1
+                    case 'Storages':
+                        storage = app_list[0]['models'].pop(mn)
+                        storage['name'] = "Quản lý kho toàn quốc"
                         mn = mn - 1
                 mn = mn + 1
 
@@ -114,6 +122,11 @@ class MyAdminPage(admin.AdminSite):
             'app_label': 'Company Setting',
             'models': [company_setting, supply_type]
         })
+        app_list.append({
+            'name': ('Kho'),
+            'app_label': 'Storage',
+            'models': [storage, applies]
+        })
         return app_list
 class CampaignAdmin(admin.ModelAdmin):
     list_display = ['id', 'org', 'title', 'is_permitted']
@@ -131,8 +144,13 @@ class CompanySettingAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'topic', 'is_chosen']
 class SupplyTypeAdmin(admin.ModelAdmin):
     list_display = ['id', 'type', 'unit', 'active']
-
+class StockApplyAdmin(admin.ModelAdmin):
+    list_display = ['id', 'way','type', 'campaign']
+class StorageAdmin(admin.ModelAdmin):
+    list_display = ['id', 'address', 'location']
 admin_site = MyAdminPage(name="admin_site")
 admin_site.register(DonationCampaign, CampaignAdmin)
 admin_site.register(CompanySetting, CompanySettingAdmin)
 admin_site.register(SupplyType, SupplyTypeAdmin)
+admin_site.register(StockApply, StockApplyAdmin)
+admin_site.register(Storage, StorageAdmin)

@@ -119,6 +119,9 @@ class DonationCampaign (BaseModel):
     is_permitted = models.BooleanField(default=False)
     enclosed_article = models.ManyToManyField('Article', related_name='enclosed')
 
+    def __str__(self):
+        return f"{self.title} - {self.org.user_info.first_name} ({self.expected_charity_start_date} - {self.expected_charity_end_date})"
+
 class DonationReport(BaseModel):
     campaign = models.ForeignKey(DonationCampaign, on_delete=models.CASCADE)
     total_used = models.IntegerField()
@@ -209,6 +212,9 @@ class Location (BaseModel):
     current_status = enum.EnumField(LocationState, default=LocationState.NORMAL)
     latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
     longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
+
+    def __str__(self):
+        return self.location
 
 class StatInfo (BaseModel):
     location = models.ForeignKey(Location, related_name='stat_history', on_delete=models.CASCADE)
