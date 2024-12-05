@@ -218,5 +218,12 @@ VNPAY_API_URL = 'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction'
 VNPAY_TMN_CODE = 'HMACWXVW'  # Website ID in VNPAY System, get from config
 VNPAY_HASH_SECRET_KEY = 'H5RWZX5W6DB9VVQAPTYLJ3KFGSLQEGKQ'  # Secret key for
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
 #GOOGLE CLOUD
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'

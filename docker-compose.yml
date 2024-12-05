@@ -1,0 +1,22 @@
+services:
+  appsmith:
+    image: index.docker.io/appsmith/appsmith-ce
+    container_name: appsmith
+    ports:
+      - "3000:80"
+      - "3001:443"
+    volumes:
+      - ./FE/stacks:/appsmith-stacks
+    restart: unless-stopped
+  pmnm:
+    container_name: pmnm
+    image: quythanh/pmnm:latest
+    restart: unless-stopped
+    command: python3 manage.py runserver 0.0.0.0:8000
+    build:
+      context: ./BE
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ./BE:/app
