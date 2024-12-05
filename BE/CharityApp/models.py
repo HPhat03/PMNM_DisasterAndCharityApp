@@ -1,35 +1,14 @@
-from datetime import datetime
-from email.policy import default
-from idlelib.pyparse import trans
+from datetime import date
 
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from datetime import date
-from django_enumfield import  enum
+from django_enumfield import enum
 from django import forms
 
+from .enums import ContentPictureType, LocationState, UserRole, WayType
 
-# Create your models here.
-#ENUM
-class UserRole(enum.Enum):
-    CIVILIAN = 0
-    CHARITY_ORG = 1
-    ADMIN = 2
 
-class ContentPictureType(enum.Enum):
-    CONTENT = 0
-    RESULT = 1
-
-class LocationState(enum.Enum):
-    NORMAL = 0
-    PANDEMIC = 1
-    DISASTER = 2
-class WayType(enum.Enum):
-    IMPORT = 0
-    EXPORT = 1
-
-#CLASS MODELS
 class BaseModel(models.Model):
     class Meta:
         abstract = True
@@ -77,7 +56,7 @@ class CharityOrg (models.Model):
     badge = models.ForeignKey('Badge', related_name='orgs', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return self.user_info.username;
+        return self.user_info.username
 class Chat (BaseModel):
     civilian = models.ForeignKey(Civilian,on_delete=models.CASCADE, null= False, related_name="chat")
     org = models.ForeignKey(CharityOrg, on_delete=models.CASCADE, null= False, related_name="chat")
