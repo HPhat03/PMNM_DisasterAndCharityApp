@@ -81,7 +81,7 @@ TEMPLATES = [
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'ddd4-27-64-68-99.ngrok-free.app', 'pmnm.quythanh.tk']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'bf96-27-64-68-99.ngrok-free.app', 'pmnm.quythanh.tk']
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -227,3 +227,25 @@ CACHES = {
 
 #GOOGLE CLOUD
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+# Bật hỗ trợ i18n và l10n
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+# Ngôn ngữ mặc định
+LANGUAGE_CODE = 'vi'  # Thay đổi theo ngôn ngữ mặc định của bạn, ví dụ: 'vi'
+
+# Múi giờ mặc định
+TIME_ZONE = 'Asia/Ho_Chi_Minh'  # Cập nhật múi giờ của bạn, ví dụ: 'Asia/Ho_Chi_Minh'
+
+# Các ngôn ngữ được hỗ trợ
+LANGUAGES = [
+    ('en', 'English'),
+    ('vi', 'Vietnamese'),
+    # Thêm ngôn ngữ khác nếu cần
+]
+
+# Đường dẫn chứa file dịch
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',  # Thư mục lưu các file dịch
+]

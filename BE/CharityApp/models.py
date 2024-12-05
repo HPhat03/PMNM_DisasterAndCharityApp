@@ -149,6 +149,7 @@ class StockApply(BaseModel):
     amount = models.IntegerField()
     way = enum.EnumField(WayType, default = WayType.IMPORT)
     campaign = models.ForeignKey(DonationCampaign, on_delete=models.CASCADE, related_name="stock_applies")
+    location = models.ForeignKey('Location', on_delete=models.CASCADE, default=1)
     wareHouse = models.ForeignKey(Storage, on_delete=models.CASCADE, null=False, related_name="stock_applies")
 
 class Approval (BaseModel):
@@ -188,7 +189,7 @@ class Article (BaseModel):
 class Location (BaseModel):
     location = models.CharField(max_length=45, unique=True)
     area = models.IntegerField(default = 1)
-    current_status = enum.EnumField(LocationState, default=LocationState.NORMAL)
+    current_status = models.CharField(max_length=100, default="Bình thường")
     latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
     longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
 

@@ -41,7 +41,9 @@ from django.shortcuts import render, redirect
 import random
 from .vnpay import vnpay
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _lazy
+from .translate import *
 # Create your views here.
 LIMIT_REPORT = 5
 LIMIT_REPORT_DAY = 10
@@ -731,3 +733,7 @@ def refund(request):
         response_json = {"error": f"Request failed with status code: {response.status_code}"}
 
     return render(request, "payment/refund.html", {"title": "Kết quả hoàn tiền giao dịch", "response_json": response_json})
+
+def my_view(request):
+    message = translate_text("Xin chào", "en") # Chuỗi này sẽ được dịch
+    return HttpResponse(message)
