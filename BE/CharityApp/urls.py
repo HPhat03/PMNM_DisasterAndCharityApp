@@ -11,4 +11,5 @@ router.register('location', views.LocationViewSet, basename = "location")
 router.register('article', views.ArticleViewSet, basename="article")
 urlpatterns = [
     path('', include(router.urls)),
+    path('article/crawl/', views.crawl_view, name='article-crawl')
 ]

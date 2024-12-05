@@ -6,14 +6,17 @@ from django.db import transaction
 from django.db.models import Q
 from rest_framework import status
 from rest_framework import parsers
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, throttle_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .models import Admin, Approval, Article, CampaignLocation, Confimation, ContentPicture, DetailDonationReport, DonationCampaign, DonationPost, DonationPostApproval, DonationPostPicture, DonationReport, DonationReportPicture, Location, LocationState, SupplyType, User, UserRole
+from .news_crawler.crawler import Crawler
 from .serializers import ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer, CivilianFromUserSerializer, LocationSerializer, PostSerializer, ReportSerializer, SupplyTypeSerializer, UserSerializer
+from .throttle import OncePerThirtyMinutesThrottle
 
 # Create your views here.
 LIMIT_REPORT = 5
@@ -312,3 +315,17 @@ class ArticleViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
 
     def get_permissions(self):
         return [AllowAny()]
+
+
+@api_view(['GET'])
+@throttle_classes([OncePerThirtyMinutesThrottle])
+def crawl_view(request):
+    topic = request.query_params.get('topic', None)
+
+    if not topic:
+        raise ValidationError({"error": "Missing required parameter: 'topic'"})
+
+    crawler = Crawler()
+    crawler.start_crawling(search_query=topic)
+
+    return Response({"message": f"Crawling started successfully with topic: {topic}"})

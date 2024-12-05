@@ -207,6 +207,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
 #GOOGLE CLOUD
 API_KEY = "AIzaSyDFtLcvpDX3QIJX6u1jtMNoge_TaKRZP14"
 image_url = f'https://vision.googleapis.com/v1/images:annotate?key={API_KEY}'
