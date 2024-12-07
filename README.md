@@ -9,6 +9,9 @@ This application was developed as part of the **[Open Source Software - OLP 2024
 
 The application facilitates rapid information dissemination, enhances connectivity among community members and organizations, and provides tools to aid disaster response and recovery efforts. This project not only demonstrates the potential of low-code technology in real-world applications but also highlights its significance in addressing urgent societal challenges.
 
+**NOTE**:
+- The presentation slides can be accessed [here](https://www.canva.com/design/DAGYlS2P72c/TwEkriPqEOpjaLw55xBNbQ/edit).
+
 # Table of Contents
 
 1. [Introduction](#introduction)
