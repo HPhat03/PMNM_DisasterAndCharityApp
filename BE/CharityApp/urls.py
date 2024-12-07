@@ -10,6 +10,7 @@ router.register('supply_type', views.SupplyTypeViewSet, basename = "supply_type"
 router.register('location', views.LocationViewSet, basename = "location")
 router.register('donation_post', views.DonationPostViewSet, basename = "donation_post")
 router.register('article', views.ArticleViewSet, basename="article")
+router.register('setting', views.SettingViewSet, basename="setting")
 urlpatterns = [
     path('', include(router.urls)),
     path('article/crawl/', views.crawl_view, name='article-crawl'),
@@ -21,5 +22,4 @@ urlpatterns = [
     path('payment_return', views.payment_return, name='payment_return'),
     path('query', views.query, name='query'),
     path('refund', views.refund, name='refund'),
-    path('test_translate', views.my_view, name='test'),
 ]

@@ -1,3 +1,4 @@
+from datetime import datetime
 from lib2to3.fixes.fix_input import context
 
 from cloudinary.uploader import upload
@@ -41,9 +42,6 @@ from django.shortcuts import render, redirect
 import random
 from .vnpay import vnpay
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy as _lazy
-from .translate import *
 # Create your views here.
 LIMIT_REPORT = 5
 LIMIT_REPORT_DAY = 10
@@ -54,12 +52,12 @@ SCOPES = ["https://www.googleapis.com/auth/cloud-vision"]
 class UserViewSet(ViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    
+
     def get_permissions(self):
         if self.action == 'create':
             return [AllowAny()]
         return [IsAuthenticated()]
-    
+
     def create(self, request, *args, **kwargs):
         user = self.serializer_class.create(self, request.data)
         return Response(self.serializer_class(user, context={'request': request}).data, status=status.HTTP_200_OK)
@@ -106,7 +104,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
         return request
 
     # def get_permissions(self):
-    #     if self.action in ['approve','add_picture']:
+    #     if self.action in ['approve','add_picture', 'report_approve']:
     #         return [AllowAny()]
     #     if self.action == 'create':
     #         return [IsAuthenticated()]
@@ -203,12 +201,13 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
     @transaction.atomic()
     @action(methods=['POST'], detail=True)
     def report(self, request, pk=None):
-        res = "Not OK"
-        print(pk)
+        res = "Thành công"
         campagn = DonationCampaign.objects.filter(pk=pk).first()
         print(campagn)
         if campagn is None:
             return Response("Không tồn tại", status=status.HTTP_200_OK)
+        if DonationReport.objects.filter(campaign=campagn).exclude(confirm=None).first() is not None:
+            return Response("Hoạt động này đã được phê duyệt báo cáo", status=status.HTTP_200_OK)
         if DonationReport.objects.filter(campaign=campagn).count() >= LIMIT_REPORT:
             return Response("Bạn đã hết số lần nộp báo cáo", status=status.HTTP_200_OK)
         if (date.today() - campagn.expected_charity_end_date).days > LIMIT_REPORT_DAY:
@@ -235,12 +234,32 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
             fund = sum(location.current_fund for location in campagn.locations.all())
             rp.total_left = fund - tmp
             rp.save()
-
+            print(rp.id)
             if rp.total_used == 0:
                 return Response("Số tiền bạn quyên góp là 0, Cảnh Báo", status=status.HTTP_200_OK)
             if rp.total_left > 500000:
                 return Response("Số tiền bạn quyên góp còn dư quá nhiều, Cảnh Báo", status=status.HTTP_200_OK)
         return Response(res, status=status.HTTP_200_OK)
+
+    @transaction.atomic()
+    @action(methods=['POST'], detail=True)
+    def report_approve(self, request, pk=None):
+        admin = Admin.objects.filter(user_info_id=request.data['cur_admin']).first()
+        print(admin)
+        if admin is None:
+            return Response("Không tìm thấy admin hiện tại", status=status.HTTP_403_FORBIDDEN)
+        report = DonationReport.objects.filter(pk=pk).first()
+        if report is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        print("hello" + request.data['is_approved'])
+        if request.data['is_approved'] == "-1":
+            report.active = False
+            report.save()
+            return Response("OK", status=status.HTTP_200_OK)
+        elif request.data['is_approved'] == "1":
+            approval = Confimation(admin=admin,report =report)
+            approval.save()
+        return Response("OK", status=status.HTTP_200_OK)
 
     @transaction.atomic()
     @action(methods = ['POST'], detail = True)
@@ -334,44 +353,11 @@ class DonationPostViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView)
     @action(methods=['POST'], detail=False)
     def analyze_picture(self, request):
         print("hello")
-        if "credentials" not in request.session:
-            return HttpResponseRedirect(reverse("start_oauth"))
-
-        credentials_data = json.loads(request.session["credentials"])
-        credentials = Credentials.from_authorized_user_info(credentials_data)
-
-        if not credentials.valid and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
-
-        vision_client = build("vision", "v1", credentials=credentials)
 
         image_files = request.FILES.getlist("images")
         for img in image_files:
             content = base64.b64encode(img.read()).decode("utf-8")
-            data = {
-                "requests": [
-                    {
-                        "image": {"content": content},
-                        "features": [{"type": "LABEL_DETECTION", "maxResults": 5}],
-                    }
-                ]
-            }
-            response = vision_client.images().annotate(body=data).execute()
-
-            request.session["credentials"] = json.dumps({
-                "token": credentials.token,
-                "refresh_token": credentials.refresh_token,
-                "token_uri": credentials.token_uri,
-                "client_id": credentials.client_id,
-                "client_secret": credentials.client_secret,
-                "scopes": credentials.scopes,
-            })
-            print(content)
-            print(response)
-            if response.status_code == 200:
-                result = response.json()
-                labels = result["responses"][0].get("labelAnnotations", [])
-                print(labels)
+            label_detection(content)
         return Response("OK", status=status.HTTP_200_OK)
 
     @transaction.atomic()
@@ -402,6 +388,17 @@ class LocationViewSet(ViewSet, generics.ListAPIView):
     def in_need(self, request):
         qs = Location.objects.filter(active=True).exclude(status=LocationState.NORMAL)
         return Response(LocationSerializer(qs, context={"request": request}).data, status = status.HTTP_200_OK)
+
+class SettingViewSet(ViewSet, generics.ListAPIView):
+    queryset = CompanySetting.objects.filter(active=True, is_chosen=True).first()
+    serializer_class = CompanySettingSerializer
+
+    def list(self, request, *args, **kwargs):
+        res = "UNAVAILABLE SETTING"
+        queryset = CompanySetting.objects.filter(active=True, is_chosen=True).first();
+        if queryset is not None:
+            res = self.serializer_class(queryset, context = {'request': request}).data
+        return Response(res,status=status.HTTP_200_OK)
 
 class ArticleViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Article.objects.all()
@@ -734,6 +731,22 @@ def refund(request):
 
     return render(request, "payment/refund.html", {"title": "Kết quả hoàn tiền giao dịch", "response_json": response_json})
 
-def my_view(request):
-    message = translate_text("Xin chào", "en") # Chuỗi này sẽ được dịch
-    return HttpResponse(message)
+def label_detection(content):
+    from google.cloud import vision
+
+    client = vision.ImageAnnotatorClient()
+
+    image = vision.Image(content=content)
+
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+    print("Labels:")
+
+    for label in labels:
+        print(label.description)
+
+    if response.error.message:
+        raise Exception(
+            "{}\nFor more info on error messages, check: "
+            "https://cloud.google.com/apis/design/errors".format(response.error.message)
+        )

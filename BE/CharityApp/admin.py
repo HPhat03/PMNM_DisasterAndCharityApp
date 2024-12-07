@@ -29,11 +29,18 @@ def DetailApprovalePage(request, id = None):
     return render(request, 'admin_detail_approval.html', context)
 
 def ApprovalReportPage(request):
-    reports = DonationReport.objects.filter(confimation=None)
+    reports = DonationReport.objects.filter(active=True,confimation=None)
     context = {
         "reports" : reports
     }
     return render(request, 'admin_report_approval.html', context)
+def DetailApprovalReportPage(request, id = None):
+    report = DonationReport.objects.filter(pk=id).first()
+    context = {
+        "report": report,
+        "detail": report.campaign,
+    }
+    return render(request, 'admin_detail_report_approval.html', context)
 
 def ApprovalPostPage(request):
     posts = DonationPost.objects.filter(donationpostapproval=None)
@@ -73,6 +80,7 @@ class MyAdminPage(admin.AdminSite):
             path('org_approval/', self.admin_view(ApprovalPage), name='Campaign Approval'),
             path('org_approval/<int:id>/', self.admin_view(DetailApprovalePage), name='Campaign Approval'),
             path('report_approval/', self.admin_view(ApprovalReportPage), name='Report Approval'),
+            path('report_approval/<int:id>/', self.admin_view(DetailApprovalReportPage), name='Detail Report Approval'),
             path('post_approval/', self.admin_view(ApprovalPostPage), name='Post Approval'),
             path('post_approval/<int:id>/', self.admin_view(DetailPostApprovalePage), name='Detail Post Approval'),
             path('storage_follow_up/', self.admin_view(StorageFollowUpPage), name='storage_follow_up'),

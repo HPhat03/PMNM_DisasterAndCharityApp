@@ -111,7 +111,7 @@ class DonationReportPicture(BaseModel):
     path = models.CharField(max_length=20)
 
 class DetailDonationReport(BaseModel):
-    report = models.OneToOneField(DonationReport, related_name="details", on_delete=models.CASCADE)
+    report = models.ForeignKey(DonationReport, related_name="details", on_delete=models.CASCADE)
     paid_for = models.CharField(max_length=100)
     paid = models.IntegerField()
 
@@ -190,8 +190,8 @@ class Location (BaseModel):
     location = models.CharField(max_length=45, unique=True)
     area = models.IntegerField(default = 1)
     current_status = models.CharField(max_length=100, default="Bình thường")
-    latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
 
     def __str__(self):
         return self.location
@@ -210,7 +210,7 @@ class CompanySetting(BaseModel):
     secondary_color = models.CharField(max_length=20)
     button_color = models.CharField(max_length=20)
     log_color = models.CharField(max_length=20)
-    logo = models.CharField(max_length=20)
+    logo = models.CharField(max_length=200)
     stat_data_source = models.CharField(max_length= 100)
     is_chosen = models.BooleanField(default=False)
 

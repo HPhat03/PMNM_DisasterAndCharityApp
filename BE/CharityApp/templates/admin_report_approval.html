@@ -9,20 +9,22 @@
   <thead>
     <tr>
       <th>Id</th>
-      <th>Tổ chức</th>
-      <th>Tên hoạt động, chiến dịch</th>
+      <th>Chiến dịch</th>
+      <th>Tổng đã sử dụng</th>
+      <th>Tổng còn lại</th>
       <th>Trạng thái</th>
       <th></th> <!-- Cột mới cho nút bấm -->
     </tr>
   </thead>
   <tbody>
-    {% for x in report %}
+    {% for x in reports %}
       <tr>
-      <td>{{x.campaign.id}}</td>
-      <td>{{x.campaign.org}}</td>
+      <td>{{x.id}}</td>
       <td>{{x.campaign.title}}</td>
+      <td>{{x.total_used}}</td>
+        <td>{{x.total_left}}</td>
       <td><span class="not-permitted">Đang chờ phê duyệt</span></td>
-      <td><button onclick="approveCampaign({{x.campaign.id}})">Phê duyệt</button></td> <!-- Nút bấm -->
+      <td><button onclick="approveCampaign({{x.id}})">Phê duyệt</button></td> <!-- Nút bấm -->
     </tr>
     {% endfor %}
   </tbody>

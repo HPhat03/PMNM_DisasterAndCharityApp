@@ -107,7 +107,7 @@ class CampagnSerializer(DynamicFieldsModelSerializer):
     org = CharityOrgSerializer()
     pictures = ContentPictureSerializer(many=True, fields=['path'])
     supply_type = SupplyTypeSerializer(fields=['type', 'unit'])
-    locations = CampaignLocationDynamidSerializer(many=True, fields=['location', 'expected_fund', 'current_fund'])
+    locations = CampaignLocationDynamidSerializer(many=True, fields=['id','location', 'expected_fund', 'current_fund'])
     enclosed_article = ArticleSerializer(many=True)
     class Meta:
         model = DonationCampaign
@@ -136,4 +136,9 @@ class PostSerializer(DynamicFieldsModelSerializer):
 class ArticleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Article
+        fields = "__all__"
+
+class CompanySettingSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = CompanySetting
         fields = "__all__"
