@@ -1,5 +1,6 @@
 import concurrent.futures
 import sys
+from datetime import date
 from pathlib import Path
 
 import requests
@@ -8,6 +9,7 @@ from bs4 import BeautifulSoup
 
 from .utils import create_dir, get_text_from_tag, init_output_dirs, read_file
 from .models import CrawlArticle
+from ..models import Article
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]  # root directory
@@ -20,19 +22,6 @@ class Crawler:
         self.num_workers = num_workers
         self.output_dpath = output_dpath
         self.total_pages = total_pages
-        self.article_type_dict = {
-            0: "thoi-su",
-            1: "du-lich",
-            2: "the-gioi",
-            3: "kinh-doanh",
-            4: "khoa-hoc",
-            5: "giai-tri",
-            6: "the-thao",
-            7: "phap-luat",
-            8: "giao-duc",
-            9: "suc-khoe",
-            10: "doi-song"
-        }
 
     def extract_content(self, url) -> CrawlArticle | None:
         """
@@ -53,30 +42,30 @@ class Crawler:
             return None
         title = title.text
 
+        # Thứ bảy, 7/12/2024, 17:00 (GMT+7)
+        article_date = soup.find('span', class_="date").text.split(", ")[1].split("/")
+        article_date = list(map(int, article_date))
+        article_date.reverse() # [2024, 12, 7]
+        article_date = date(*article_date)
+
         # some sport news have location-stamp child tag inside description tag
         description = (get_text_from_tag(p) for p in soup.find("p", class_="description").contents)
         paragraphs = (get_text_from_tag(p) for p in soup.find_all("p", class_="Normal"))
 
         figure_tag = soup.find("figure", class_="tplCaption")
+        if figure_tag is not None:
 
-        if figure_tag is None:
-            return CrawlArticle(title, description, paragraphs, url, None)
+            picture_tag = figure_tag.find("picture")
+            if picture_tag is not None:
 
-        picture_tag = figure_tag.find("picture")
+                img_tag = picture_tag.find("img")
+                if img_tag is not None:
+                    img = img_tag["data-src"]
+                    return CrawlArticle(title, description, paragraphs, url, img, article_date)
 
-        if picture_tag is None:
-            return CrawlArticle(title, description, paragraphs, url, None)
+        return CrawlArticle(title, description, paragraphs, url, None, article_date)
 
-        img_tag = picture_tag.find("img")
-
-        if img_tag is None:
-            return CrawlArticle(title, description, paragraphs, url, None)
-
-        img = img_tag["data-src"]
-
-        return CrawlArticle(title, description, paragraphs, url, img)
-
-    def write_content(self, url, output_fpath) -> bool:
+    def write_content(self, article) -> bool:
         """
         From url, extract title, description and paragraphs then write in output_fpath
         @param url (str): url to crawl
@@ -84,13 +73,18 @@ class Crawler:
         @return (bool): True if crawl successfully and otherwise
         """
 
-        article = self.extract_content(url)
-
         if article is None:
             return False
 
-        with open(output_fpath, "w", encoding="utf-8") as file:
-            file.write(str(article))
+        Article.objects.create(
+            title=article.title,
+            brief="\n".join(list(article.description)),
+            content="\n".join(list(article.paragraphs)),
+            real_path=article.src,
+            img_url=article.img,
+            created_date=article.date,
+            updated_date=article.date,
+        )
 
         return True
 
@@ -123,36 +117,6 @@ class Crawler:
         error_urls = self.crawl_search(search_query)
         print(f"The number of failed URL: {len(error_urls)}")
 
-    def crawl_urls(self, urls_fpath, output_dpath):
-        """
-        Crawling contents from a list of urls
-        Returns:
-            list of failed urls
-        """
-        print(f"Start crawling urls from {urls_fpath} file...")
-        create_dir(output_dpath)
-        urls = list(read_file(urls_fpath))
-        num_urls = len(urls)
-        # number of digits in an integer
-        self.index_len = len(str(num_urls))
-
-        args = ([output_dpath]*num_urls, urls, range(num_urls))
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_workers) as executor:
-            results = list(tqdm(executor.map(self.crawl_url_thread, *args), total=num_urls, desc="URLs"))
-
-        print(f"Saving crawling result into {output_dpath} directory...")
-        return [result for result in results if result is not None]
-
-    def crawl_url_thread(self, output_dpath, url, index):
-        """ Crawling content of the specific url """
-        file_index = str(index + 1).zfill(self.index_len)
-        output_fpath = "".join([output_dpath, "/url_", file_index, ".txt"])
-        is_success = self.write_content(url, output_fpath)
-
-        if not is_success:
-            print(f"Crawling unsuccessfully: {url}")
-            return url
-
     def crawl_search(self, search_query):
         """
         Crawls pages of search results for a given query, extracting article URLs from each page.
@@ -175,6 +139,33 @@ class Crawler:
         error_urls = self.crawl_urls(articles_urls_fpath, results_type_dpath)
 
         return error_urls
+
+    def crawl_urls(self, urls_fpath, output_dpath):
+        """
+        Crawling contents from a list of urls
+        Returns:
+            list of failed urls
+        """
+        print(f"Start crawling urls from {urls_fpath} file...")
+        create_dir(output_dpath)
+        urls = list(read_file(urls_fpath))
+        num_urls = len(urls)
+
+        args = ([output_dpath]*num_urls, urls, range(num_urls))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_workers) as executor:
+            results = list(tqdm(executor.map(self.crawl_url_thread, *args), total=num_urls, desc="URLs"))
+
+        print(f"Saving crawling result into {output_dpath} directory...")
+        return [result for result in results if result is not None]
+
+    def crawl_url_thread(self, output_dpath, url, index):
+        """ Crawling content of the specific url """
+        article = self.extract_content(url)
+        is_success = self.write_content(article)
+
+        if not is_success:
+            print(f"Crawling unsuccessfully: {url}")
+            return url
 
     def get_urls_of_search(self, search_query):
         articles_urls: list
