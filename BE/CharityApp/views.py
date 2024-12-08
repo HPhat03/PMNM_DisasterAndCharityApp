@@ -455,93 +455,114 @@ def payment(request):
 
 def payment_ipn(request):
     inputData = request.GET
-    if inputData:
-        vnp = vnpay()
-        vnp.responseData = inputData.dict()
-        order_id = inputData['vnp_TxnRef']
-        amount = inputData['vnp_Amount']
-        order_desc = inputData['vnp_OrderInfo']
-        vnp_TransactionNo = inputData['vnp_TransactionNo']
-        vnp_ResponseCode = inputData['vnp_ResponseCode']
-        vnp_TmnCode = inputData['vnp_TmnCode']
-        vnp_PayDate = inputData['vnp_PayDate']
-        vnp_BankCode = inputData['vnp_BankCode']
-        vnp_CardType = inputData['vnp_CardType']
-        if vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
-            # Check & Update Order Status in your Database
-            # Your code here
-            firstTimeUpdate = True
-            totalamount = True
-            if totalamount:
-                if firstTimeUpdate:
-                    if vnp_ResponseCode == '00':
-                        print('Payment Success. Your code implement here')
-                    else:
-                        print('Payment Error. Your code implement here')
+    if not inputData:
+        return JsonResponse({'RspCode': '99', 'Message': 'Invalid request'})
 
-                    # Return VNPAY: Merchant update success
-                    result = JsonResponse({'RspCode': '00', 'Message': 'Confirm Success'})
-                else:
-                    # Already Update
-                    result = JsonResponse({'RspCode': '02', 'Message': 'Order Already Update'})
-            else:
-                # invalid amount
-                result = JsonResponse({'RspCode': '04', 'Message': 'invalid amount'})
-        else:
-            # Invalid Signature
-            result = JsonResponse({'RspCode': '97', 'Message': 'Invalid Signature'})
+    vnp = vnpay()
+    vnp.responseData = inputData.dict()
+    order_id = inputData['vnp_TxnRef']
+    amount = inputData['vnp_Amount']
+    order_desc = inputData['vnp_OrderInfo']
+    vnp_TransactionNo = inputData['vnp_TransactionNo']
+    vnp_ResponseCode = inputData['vnp_ResponseCode']
+    vnp_TmnCode = inputData['vnp_TmnCode']
+    vnp_PayDate = inputData['vnp_PayDate']
+    vnp_BankCode = inputData['vnp_BankCode']
+    vnp_CardType = inputData['vnp_CardType']
+
+    if not vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
+        return JsonResponse({'RspCode': '97', 'Message': 'Invalid Signature'})
+
+    # Check & Update Order Status in your Database
+    # Your code here
+    firstTimeUpdate = True
+    totalamount = True
+
+    if not totalamount:
+        return JsonResponse({'RspCode': '04', 'Message': 'invalid amount'})
+
+    if not firstTimeUpdate:
+        return JsonResponse({'RspCode': '02', 'Message': 'Order Already Update'})
+
+    if vnp_ResponseCode == '00':
+        print('Payment Success. Your code implement here')
     else:
-        result = JsonResponse({'RspCode': '99', 'Message': 'Invalid request'})
+        print('Payment Error. Your code implement here')
 
-    return result
+    # Return VNPAY: Merchant update success
+    return JsonResponse({'RspCode': '00', 'Message': 'Confirm Success'})
 
 
 def payment_return(request):
     inputData = request.GET
-    if inputData:
-        vnp = vnpay()
-        vnp.responseData = inputData.dict()
-        order_id = inputData['vnp_TxnRef']
-        amount = int(inputData['vnp_Amount']) / 100
-        order_desc = inputData['vnp_OrderInfo']
-        vnp_TransactionNo = inputData['vnp_TransactionNo']
-        vnp_ResponseCode = inputData['vnp_ResponseCode']
-        vnp_TmnCode = inputData['vnp_TmnCode']
-        vnp_PayDate = inputData['vnp_PayDate']
-        vnp_BankCode = inputData['vnp_BankCode']
-        vnp_CardType = inputData['vnp_CardType']
-        if vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
-            if vnp_ResponseCode == "00":
-                uid = request.COOKIES.get('user_id')
-                cid = request.COOKIES.get('campaign_id')
-                type = request.COOKIES.get('type')
-                if type == 'campaign':
-                    Donation.objects.create(civilian_id=uid, campaign_id= cid, donated=amount)
-                    cp = CampaignLocation.objects.filter(pk=cid).first()
-                    cp.current_fund += amount
-                    cp.save()
-                elif type == 'post':
-                    DonationPostHistory.objects.create(user_id=uid,post_id=cid, donated=amount)
-                return render(request, "payment/payment_return.html", {"title": "Kết quả thanh toán",
-                                                               "result": "Thành công", "order_id": order_id,
-                                                               "amount": amount,
-                                                               "order_desc": order_desc,
-                                                               "vnp_TransactionNo": vnp_TransactionNo,
-                                                               "vnp_ResponseCode": vnp_ResponseCode})
-            else:
-                return render(request, "payment/payment_return.html", {"title": "Kết quả thanh toán",
-                                                               "result": "Lỗi", "order_id": order_id,
-                                                               "amount": amount,
-                                                               "order_desc": order_desc,
-                                                               "vnp_TransactionNo": vnp_TransactionNo,
-                                                               "vnp_ResponseCode": vnp_ResponseCode})
-        else:
-            return render(request, "payment/payment_return.html",
-                          {"title": "Kết quả thanh toán", "result": "Lỗi", "order_id": order_id, "amount": amount,
-                           "order_desc": order_desc, "vnp_TransactionNo": vnp_TransactionNo,
-                           "vnp_ResponseCode": vnp_ResponseCode, "msg": "Sai checksum"})
-    else:
+    if not inputData:
         return render(request, "payment/payment_return.html", {"title": "Kết quả thanh toán", "result": ""})
+
+    vnp = vnpay()
+    vnp.responseData = inputData.dict()
+    order_id = inputData['vnp_TxnRef']
+    amount = int(inputData['vnp_Amount']) / 100
+    order_desc = inputData['vnp_OrderInfo']
+    vnp_TransactionNo = inputData['vnp_TransactionNo']
+    vnp_ResponseCode = inputData['vnp_ResponseCode']
+    vnp_TmnCode = inputData['vnp_TmnCode']
+    vnp_PayDate = inputData['vnp_PayDate']
+    vnp_BankCode = inputData['vnp_BankCode']
+    vnp_CardType = inputData['vnp_CardType']
+
+    if not vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
+        return render(
+            request, "payment/payment_return.html",
+            {
+                "title": "Kết quả thanh toán",
+                "result": "Lỗi",
+                "order_id": order_id,
+                "amount": amount,
+                "order_desc": order_desc,
+                "vnp_TransactionNo": vnp_TransactionNo,
+                "vnp_ResponseCode": vnp_ResponseCode,
+                "msg": "Sai checksum"
+            }
+        )
+
+    if vnp_ResponseCode != "00":
+        return render(
+            request, "payment/payment_return.html",
+            {
+                "title": "Kết quả thanh toán",
+                "result": "Lỗi",
+                "order_id": order_id,
+                "amount": amount,
+                "order_desc": order_desc,
+                "vnp_TransactionNo": vnp_TransactionNo,
+                "vnp_ResponseCode": vnp_ResponseCode
+            }
+        )
+
+    uid = request.COOKIES.get('user_id')
+    cid = request.COOKIES.get('campaign_id')
+
+    match request.COOKIES.get("type"):
+        case "campaign":
+            Donation.objects.create(civilian_id=uid, campaign_id= cid, donated=amount)
+            cp = CampaignLocation.objects.filter(pk=cid).first()
+            cp.current_fund += amount
+            cp.save()
+        case "post":
+            DonationPostHistory.objects.create(user_id=uid,post_id=cid, donated=amount)
+
+    return render(
+        request, "payment/payment_return.html",
+        {
+            "title": "Kết quả thanh toán",
+            "result": "Thành công",
+            "order_id": order_id,
+            "amount": amount,
+            "order_desc": order_desc,
+            "vnp_TransactionNo": vnp_TransactionNo,
+            "vnp_ResponseCode": vnp_ResponseCode
+        }
+    )
 
 
 def get_client_ip(request):
