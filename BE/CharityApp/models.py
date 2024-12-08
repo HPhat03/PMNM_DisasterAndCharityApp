@@ -178,7 +178,11 @@ class Donation (BaseModel):
 class Article (BaseModel):
     title = models.CharField(max_length=100)
     brief = models.TextField()
-    real_path = models.CharField(max_length=100)
+    real_path = models.CharField(max_length=255)
+    img_url = models.CharField(null=True, max_length=255)
+    content = models.TextField()
+    created_date = models.DateField()
+    updated_date = models.DateField()
 
 # class Comment (BaseModel):
 #     user = models.ForeignKey(User, on_delete=models.CASCADE)

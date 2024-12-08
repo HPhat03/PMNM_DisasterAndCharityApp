@@ -1,47 +1,41 @@
-from datetime import datetime
-from lib2to3.fixes.fix_input import context
+import hashlib
+import hmac
+import json
+import random
+from datetime import datetime, date
 
+import requests
 from cloudinary.uploader import upload
 from django.conf import settings
-from django.db.models import  Q
-from django.http import HttpResponseRedirect, HttpResponse
-from django.urls import reverse
-from django.views import View
-from google.auth.transport.requests import Request
-from google.cloud import vision
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
+from django.db import transaction
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
 from rest_framework import status
 from rest_framework import parsers
-from rest_framework.decorators import action, api_view, throttle_classes
+from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
-import json
-
-from django.db.models import  Q
-from rest_framework import status, parsers
-from lib2to3.fixes.fix_input import context
-from cloudinary.uploader import upload
-from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from urllib3 import request
 
-from .models import Admin, Approval, Article, CampaignLocation, Confimation, ContentPicture, DetailDonationReport, DonationCampaign, DonationPost, DonationPostApproval, DonationPostPicture, DonationReport, DonationReportPicture, Location, LocationState, SupplyType, User, UserRole
+from .models import (
+    Admin, Approval, Article, CampaignLocation, CompanySetting, Confimation,
+    ContentPicture, DetailDonationReport, Donation, DonationCampaign, DonationPost,
+    DonationPostApproval, DonationPostHistory, DonationPostPicture, DonationReport,
+    DonationReportPicture, Location, LocationState, PaymentForm, SupplyType, User,
+    UserRole
+)
 from .news_crawler.crawler import Crawler
-from .serializers import ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer, CivilianFromUserSerializer, LocationSerializer, PostSerializer, ReportSerializer, SupplyTypeSerializer, UserSerializer
+from .serializers import (
+    ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer,
+    CivilianFromUserSerializer, CompanySettingSerializer, LocationSerializer,
+    PostSerializer, ReportSerializer, SupplyTypeSerializer, UserSerializer
+)
 from .throttle import OncePerThirtyMinutesThrottle
-from django.core.files.storage import FileSystemStorage
-from .models import *
-from .serializers import *
-from .permissions import *
-import json
-import base64
-import requests
-from django.shortcuts import render, redirect
-import random
 from .vnpay import vnpay
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
@@ -118,16 +112,6 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
         request = super().initialize_request(request, *args, **kwargs)
         self.action = self.action_map.get(request.method.lower())
         print(request.content_type)
-        if request.method in ['POST'] and self.action == 'add_picture':
-            request.parsers = [MultiPartParser(), FileUploadParser()]
-        else:
-            request.parsers = [JSONParser()]
-        return request
-
-    def initialize_request(self, request, *args, **kwargs):
-        request = super().initialize_request(request, *args, **kwargs)
-        self.action = self.action_map.get(request.method.lower())
-        print(request.content_type)
         if request.method in ['POST'] and self.action in ['add_picture','report']:
             request.parsers = [MultiPartParser(), FileUploadParser()]
         else:
@@ -142,7 +126,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
     #     return [IsAuthenticated()]
 
     def get_queryset(self):
-        q = self.queryset;
+        q = self.queryset
         kw = self.request.query_params.get('kw')
         order_flag = self.request.query_params.get('ordered')
         if kw is not None:
@@ -151,16 +135,6 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
             print("hello")
             q = q.filter(org__badge__gt=0).order_by("-org__badge")
         return q
-
-    def initialize_request(self, request, *args, **kwargs):
-        request = super().initialize_request(request, *args, **kwargs)
-        self.action = self.action_map.get(request.method.lower())
-        print(request.content_type)
-        if request.method in ['POST'] and self.action == 'report':
-            request.parsers = [MultiPartParser(), FileUploadParser()]
-        else:
-            request.parsers = [JSONParser()]
-        return request
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
@@ -171,7 +145,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
             locations = request.data.pop("locations")
 
         supply_type = SupplyType.objects.filter(pk=request.data.pop('supply_type')).first()
-        if(supply_type == None):
+        if supply_type is None:
             return Response("Không tìm thấy loại hình quyên góp", status=status.HTTP_200_OK)
         try:
             with transaction.atomic():
@@ -445,7 +419,7 @@ class SettingViewSet(ViewSet, generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         res = "UNAVAILABLE SETTING"
-        queryset = CompanySetting.objects.filter(active=True, is_chosen=True).first();
+        queryset = CompanySetting.objects.filter(active=True, is_chosen=True).first()
         if queryset is not None:
             res = self.serializer_class(queryset, context = {'request': request}).data
         return Response(res,status=status.HTTP_200_OK)
@@ -472,14 +446,21 @@ class ChatViewSet(ViewSet, generics.ListAPIView):
 
 
 @api_view(['GET'])
-@throttle_classes([OncePerThirtyMinutesThrottle])
 def crawl_view(request):
     topic = request.query_params.get('topic', None)
 
     if not topic:
         raise ValidationError({"error": "Missing required parameter: 'topic'"})
 
-    crawler = Crawler()
+    throttle = OncePerThirtyMinutesThrottle()
+    if not throttle.allow_request(request, crawl_view):
+        wait_time = throttle.wait()
+        return Response(
+            {"error": "Request throttled. Try again later.", "retry_after": wait_time},
+            status=429,
+        )
+
+    crawler = Crawler(num_workers=2)
     crawler.start_crawling(search_query=topic)
 
     return Response({"message": f"Crawling started successfully with topic: {topic}"})
@@ -546,93 +527,114 @@ def payment(request):
 
 def payment_ipn(request):
     inputData = request.GET
-    if inputData:
-        vnp = vnpay()
-        vnp.responseData = inputData.dict()
-        order_id = inputData['vnp_TxnRef']
-        amount = inputData['vnp_Amount']
-        order_desc = inputData['vnp_OrderInfo']
-        vnp_TransactionNo = inputData['vnp_TransactionNo']
-        vnp_ResponseCode = inputData['vnp_ResponseCode']
-        vnp_TmnCode = inputData['vnp_TmnCode']
-        vnp_PayDate = inputData['vnp_PayDate']
-        vnp_BankCode = inputData['vnp_BankCode']
-        vnp_CardType = inputData['vnp_CardType']
-        if vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
-            # Check & Update Order Status in your Database
-            # Your code here
-            firstTimeUpdate = True
-            totalamount = True
-            if totalamount:
-                if firstTimeUpdate:
-                    if vnp_ResponseCode == '00':
-                        print('Payment Success. Your code implement here')
-                    else:
-                        print('Payment Error. Your code implement here')
+    if not inputData:
+        return JsonResponse({'RspCode': '99', 'Message': 'Invalid request'})
 
-                    # Return VNPAY: Merchant update success
-                    result = JsonResponse({'RspCode': '00', 'Message': 'Confirm Success'})
-                else:
-                    # Already Update
-                    result = JsonResponse({'RspCode': '02', 'Message': 'Order Already Update'})
-            else:
-                # invalid amount
-                result = JsonResponse({'RspCode': '04', 'Message': 'invalid amount'})
-        else:
-            # Invalid Signature
-            result = JsonResponse({'RspCode': '97', 'Message': 'Invalid Signature'})
+    vnp = vnpay()
+    vnp.responseData = inputData.dict()
+    order_id = inputData['vnp_TxnRef']
+    amount = inputData['vnp_Amount']
+    order_desc = inputData['vnp_OrderInfo']
+    vnp_TransactionNo = inputData['vnp_TransactionNo']
+    vnp_ResponseCode = inputData['vnp_ResponseCode']
+    vnp_TmnCode = inputData['vnp_TmnCode']
+    vnp_PayDate = inputData['vnp_PayDate']
+    vnp_BankCode = inputData['vnp_BankCode']
+    vnp_CardType = inputData['vnp_CardType']
+
+    if not vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
+        return JsonResponse({'RspCode': '97', 'Message': 'Invalid Signature'})
+
+    # Check & Update Order Status in your Database
+    # Your code here
+    firstTimeUpdate = True
+    totalamount = True
+
+    if not totalamount:
+        return JsonResponse({'RspCode': '04', 'Message': 'invalid amount'})
+
+    if not firstTimeUpdate:
+        return JsonResponse({'RspCode': '02', 'Message': 'Order Already Update'})
+
+    if vnp_ResponseCode == '00':
+        print('Payment Success. Your code implement here')
     else:
-        result = JsonResponse({'RspCode': '99', 'Message': 'Invalid request'})
+        print('Payment Error. Your code implement here')
 
-    return result
+    # Return VNPAY: Merchant update success
+    return JsonResponse({'RspCode': '00', 'Message': 'Confirm Success'})
 
 
 def payment_return(request):
     inputData = request.GET
-    if inputData:
-        vnp = vnpay()
-        vnp.responseData = inputData.dict()
-        order_id = inputData['vnp_TxnRef']
-        amount = int(inputData['vnp_Amount']) / 100
-        order_desc = inputData['vnp_OrderInfo']
-        vnp_TransactionNo = inputData['vnp_TransactionNo']
-        vnp_ResponseCode = inputData['vnp_ResponseCode']
-        vnp_TmnCode = inputData['vnp_TmnCode']
-        vnp_PayDate = inputData['vnp_PayDate']
-        vnp_BankCode = inputData['vnp_BankCode']
-        vnp_CardType = inputData['vnp_CardType']
-        if vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
-            if vnp_ResponseCode == "00":
-                uid = request.COOKIES.get('user_id')
-                cid = request.COOKIES.get('campaign_id')
-                type = request.COOKIES.get('type')
-                if type == 'campaign':
-                    Donation.objects.create(civilian_id=uid, campaign_id= cid, donated=amount)
-                    cp = CampaignLocation.objects.filter(pk=cid).first()
-                    cp.current_fund += amount
-                    cp.save()
-                elif type == 'post':
-                    DonationPostHistory.objects.create(user_id=uid,post_id=cid, donated=amount)
-                return render(request, "payment/payment_return.html", {"title": "Kết quả thanh toán",
-                                                               "result": "Thành công", "order_id": order_id,
-                                                               "amount": amount,
-                                                               "order_desc": order_desc,
-                                                               "vnp_TransactionNo": vnp_TransactionNo,
-                                                               "vnp_ResponseCode": vnp_ResponseCode})
-            else:
-                return render(request, "payment/payment_return.html", {"title": "Kết quả thanh toán",
-                                                               "result": "Lỗi", "order_id": order_id,
-                                                               "amount": amount,
-                                                               "order_desc": order_desc,
-                                                               "vnp_TransactionNo": vnp_TransactionNo,
-                                                               "vnp_ResponseCode": vnp_ResponseCode})
-        else:
-            return render(request, "payment/payment_return.html",
-                          {"title": "Kết quả thanh toán", "result": "Lỗi", "order_id": order_id, "amount": amount,
-                           "order_desc": order_desc, "vnp_TransactionNo": vnp_TransactionNo,
-                           "vnp_ResponseCode": vnp_ResponseCode, "msg": "Sai checksum"})
-    else:
+    if not inputData:
         return render(request, "payment/payment_return.html", {"title": "Kết quả thanh toán", "result": ""})
+
+    vnp = vnpay()
+    vnp.responseData = inputData.dict()
+    order_id = inputData['vnp_TxnRef']
+    amount = int(inputData['vnp_Amount']) / 100
+    order_desc = inputData['vnp_OrderInfo']
+    vnp_TransactionNo = inputData['vnp_TransactionNo']
+    vnp_ResponseCode = inputData['vnp_ResponseCode']
+    vnp_TmnCode = inputData['vnp_TmnCode']
+    vnp_PayDate = inputData['vnp_PayDate']
+    vnp_BankCode = inputData['vnp_BankCode']
+    vnp_CardType = inputData['vnp_CardType']
+
+    if not vnp.validate_response(settings.VNPAY_HASH_SECRET_KEY):
+        return render(
+            request, "payment/payment_return.html",
+            {
+                "title": "Kết quả thanh toán",
+                "result": "Lỗi",
+                "order_id": order_id,
+                "amount": amount,
+                "order_desc": order_desc,
+                "vnp_TransactionNo": vnp_TransactionNo,
+                "vnp_ResponseCode": vnp_ResponseCode,
+                "msg": "Sai checksum"
+            }
+        )
+
+    if vnp_ResponseCode != "00":
+        return render(
+            request, "payment/payment_return.html",
+            {
+                "title": "Kết quả thanh toán",
+                "result": "Lỗi",
+                "order_id": order_id,
+                "amount": amount,
+                "order_desc": order_desc,
+                "vnp_TransactionNo": vnp_TransactionNo,
+                "vnp_ResponseCode": vnp_ResponseCode
+            }
+        )
+
+    uid = request.COOKIES.get('user_id')
+    cid = request.COOKIES.get('campaign_id')
+
+    match request.COOKIES.get("type"):
+        case "campaign":
+            Donation.objects.create(civilian_id=uid, campaign_id= cid, donated=amount)
+            cp = CampaignLocation.objects.filter(pk=cid).first()
+            cp.current_fund += amount
+            cp.save()
+        case "post":
+            DonationPostHistory.objects.create(user_id=uid,post_id=cid, donated=amount)
+
+    return render(
+        request, "payment/payment_return.html",
+        {
+            "title": "Kết quả thanh toán",
+            "result": "Thành công",
+            "order_id": order_id,
+            "amount": amount,
+            "order_desc": order_desc,
+            "vnp_TransactionNo": vnp_TransactionNo,
+            "vnp_ResponseCode": vnp_ResponseCode
+        }
+    )
 
 
 def get_client_ip(request):
@@ -753,4 +755,3 @@ def refund(request):
         response_json = {"error": f"Request failed with status code: {response.status_code}"}
 
     return render(request, "payment/refund.html", {"title": "Kết quả hoàn tiền giao dịch", "response_json": response_json})
-
