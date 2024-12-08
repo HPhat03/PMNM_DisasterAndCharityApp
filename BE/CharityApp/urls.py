@@ -12,10 +12,7 @@ router.register('donation_post', views.DonationPostViewSet, basename = "donation
 router.register('article', views.ArticleViewSet, basename="article")
 urlpatterns = [
     path('', include(router.urls)),
-    path('article/crawl/', views.crawl_view, name='article-crawl')
-]
-    path("oauth/start/", views.start_oauth, name="start_oauth"),
-    path("oauth/callback/", views.oauth_callback, name="oauth_callback"),
+    path('article/crawl/', views.crawl_view, name='article-crawl'),
     path('pay', views.index, name='index'),
     path('payment', views.payment, name='payment'),
     path('payment_ipn', views.payment_ipn, name='payment_ipn'),
