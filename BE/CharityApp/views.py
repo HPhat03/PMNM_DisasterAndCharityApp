@@ -386,7 +386,7 @@ def crawl_view(request):
             status=429,
         )
 
-    crawler = Crawler()
+    crawler = Crawler(num_workers=2)
     crawler.start_crawling(search_query=topic)
 
     return Response({"message": f"Crawling started successfully with topic: {topic}"})
