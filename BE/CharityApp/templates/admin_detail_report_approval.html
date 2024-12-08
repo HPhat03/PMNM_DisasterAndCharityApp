@@ -9,7 +9,7 @@
     <div class="status active">Sẵn sàng để kêu gọi</div>
 
     <div class="info">
-        <p><strong>Tổ chức:</strong> {{detail.org}}</p>
+        <p><strong>Tổ chức:</strong> {{detail.org.user_info.name}}</p>
         <p><strong>Hoạt động:</strong> {{detail.title}}</p>
 
         <p><strong>Nội dung:</strong></p>
@@ -48,16 +48,38 @@
         </p>
     </div>
 
-    <p><strong>Lần xác nhận thứ {{approval.time_id}}, hãy chọn người cho lần xét duyệt tiếp theo</strong></p>
-    <select id="next_admin">
-        {% for ad in admins %}
-        <option value="{{ad.user_info.id}}">{{ad}}</option>
-        {% endfor %}
+    <p><h1>Nội dung bài báo cáo:</h1></p>
+    <p><strong>Tổng đã sử dụng:</strong> {{report.total_used}}</p>
+    <p><strong>Tổng còn lại:</strong> {{report.total_left}}</p>
+    <p><strong>Chi tiết các khoản sử dụng:</strong></p>
+    <table>
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Nội dung</th>
+                <th>Số lượng</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for x in report.details.all %}
+            <tr>
+                <td>{{x.id}}</td>
+                <td>{{x.paid_for}}</td>
+                <td>{{x.paid}} {{detail.supply_type.unit}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+    </table>
+    <p><strong>Minh chứng:</strong></p>
+    {% for pic in report.pictures.all%}
+        <img style="width: 20%" src="{{pic.path}}"/>
+    {% endfor %}
+    <select id="approved">
+        <option value="0">Xét duyệt</option>
+        <option value="-1">Từ chối</option>
+        <option value="1">Chấp nhận</option>
     </select><br><br>
-
-    <label for="final_approval">Hoặc, Phê duyệt như người cuối cùng:</label>
-    <input id="final_approval" name="final_approval" type="checkbox">
-    <button class="history" onclick="approveCampaign({{detail.id}})">Phê duyệt</button>
+    <button class="history" onclick="approveCampaign({{report.id}})">Phê duyệt</button>
 </div>
 
 <style>
@@ -117,15 +139,19 @@
 
 <script>
     function approveCampaign(id) {
-      checkedFinal = document.getElementById("final_approval").checked
-      nextAdmin = document.getElementById("next_admin").value
 
+      approved = document.getElementById("approved").value
+      console.log(approved)
+      if(approved == "0")
+      {
+        alert("Vui lòng xét duyệt trước khi xác nhận");
+        return;
+      }
       data = {
-        "is_final": checkedFinal,
-        "next_admin": nextAdmin,
+        "is_approved": approved,
         "cur_admin": {{request.user.id}}
       }
-      fetch(`/donation_campaign/${id}/approve/`, {
+      fetch(`/donation_campaign/${id}/report_approve/`, {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json'

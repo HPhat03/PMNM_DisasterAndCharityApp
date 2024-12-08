@@ -1,36 +1,51 @@
 {% extends "admin/base.html" %}
 
 {% block content %}
-<h2>Phê duyệt và xác nhận <strong> > </strong> Báo cáo quyên góp tổ chức</h2>
+<h2>Kho<strong> > </strong> Theo dòi hàng hóa</h2>
 <hr/>
-<p>Xem xét và xét duyệt các báo cáo chiến dịch thiện nguyện, các hoạt động kêu gọi quyên góp của các tổ chức thiện nguyện.</p>
+<p>Hiện các thông tin, số lượng hàng hóa trong việc quyên góp hiện có trong các kho hàng trên toàn quốc</p>
 
 <table>
   <thead>
     <tr>
       <th>Id</th>
-      <th>Chiến dịch</th>
-      <th>Tổng đã sử dụng</th>
-      <th>Tổng còn lại</th>
-      <th>Trạng thái</th>
-      <th></th> <!-- Cột mới cho nút bấm -->
+      <th>Tỉnh/thành</th>
+      <th>Địa chỉ</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
-    {% for x in reports %}
+    {% for x in storages %}
       <tr>
       <td>{{x.id}}</td>
-      <td>{{x.campaign.title}}</td>
-      <td>{{x.total_used}}</td>
-        <td>{{x.total_left}}</td>
-      <td><span class="not-permitted">Đang chờ phê duyệt</span></td>
-      <td><button onclick="approveCampaign({{x.id}})">Phê duyệt</button></td> <!-- Nút bấm -->
+      <td>{{x.location.location}}</td>
+      <td>{{x.address}}</td>
+      <td><button onclick="approveCampaign({{x.id}})">Xem</button></td> <!-- Nút bấm -->
     </tr>
     {% endfor %}
   </tbody>
 </table>
 
-<p>{{reports.count}} donation campaigns</p>
+<p>Tổng cộng là {{storages.count}} kho</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Loại</th>
+      <th>Số lượng</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for x in detail %}
+      <tr>
+      <td>{{x.id}}</td>
+      <td>{{x.type.type}}</td>
+      <td>{{x.amount}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
 <style>
   body {
@@ -87,9 +102,4 @@
   }
 </style>
 
-<script>
-  function approveCampaign(id) {
-    window.location.href = `/admin/report_approval/${id}/`
-  }
-</script>
 {% endblock %}

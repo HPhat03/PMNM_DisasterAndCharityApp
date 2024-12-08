@@ -98,6 +98,9 @@ class DonationCampaign (BaseModel):
     is_permitted = models.BooleanField(default=False)
     enclosed_article = models.ManyToManyField('Article', related_name='enclosed')
 
+    def __str__(self):
+        return f"{self.title} - {self.org.user_info.first_name} ({self.expected_charity_start_date} - {self.expected_charity_end_date})"
+
 class DonationReport(BaseModel):
     campaign = models.ForeignKey(DonationCampaign, on_delete=models.CASCADE)
     total_used = models.IntegerField()
@@ -108,7 +111,7 @@ class DonationReportPicture(BaseModel):
     path = models.CharField(max_length=20)
 
 class DetailDonationReport(BaseModel):
-    report = models.OneToOneField(DonationReport, related_name="details", on_delete=models.CASCADE)
+    report = models.ForeignKey(DonationReport, related_name="details", on_delete=models.CASCADE)
     paid_for = models.CharField(max_length=100)
     paid = models.IntegerField()
 
@@ -146,6 +149,7 @@ class StockApply(BaseModel):
     amount = models.IntegerField()
     way = enum.EnumField(WayType, default = WayType.IMPORT)
     campaign = models.ForeignKey(DonationCampaign, on_delete=models.CASCADE, related_name="stock_applies")
+    location = models.ForeignKey('Location', on_delete=models.CASCADE, default=1)
     wareHouse = models.ForeignKey(Storage, on_delete=models.CASCADE, null=False, related_name="stock_applies")
 
 class Approval (BaseModel):
@@ -189,9 +193,12 @@ class Article (BaseModel):
 class Location (BaseModel):
     location = models.CharField(max_length=45, unique=True)
     area = models.IntegerField(default = 1)
-    current_status = enum.EnumField(LocationState, default=LocationState.NORMAL)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0)
+    current_status = models.CharField(max_length=100, default="Bình thường")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
+
+    def __str__(self):
+        return self.location
 
 class StatInfo (BaseModel):
     location = models.ForeignKey(Location, related_name='stat_history', on_delete=models.CASCADE)
@@ -207,7 +214,7 @@ class CompanySetting(BaseModel):
     secondary_color = models.CharField(max_length=20)
     button_color = models.CharField(max_length=20)
     log_color = models.CharField(max_length=20)
-    logo = models.CharField(max_length=20)
+    logo = models.CharField(max_length=200)
     stat_data_source = models.CharField(max_length= 100)
     is_chosen = models.BooleanField(default=False)
 

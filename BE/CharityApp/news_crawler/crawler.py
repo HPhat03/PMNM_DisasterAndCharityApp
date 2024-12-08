@@ -150,8 +150,6 @@ class Crawler:
         create_dir(output_dpath)
         urls = list(read_file(urls_fpath))
         num_urls = len(urls)
-        # number of digits in an integer
-        self.index_len = len(str(num_urls))
 
         args = ([output_dpath]*num_urls, urls, range(num_urls))
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_workers) as executor:
