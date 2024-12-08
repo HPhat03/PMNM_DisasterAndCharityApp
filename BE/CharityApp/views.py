@@ -1,46 +1,40 @@
-from lib2to3.fixes.fix_input import context
+import hashlib
+import hmac
+import json
+import random
+from datetime import datetime, date
 
+import requests
 from cloudinary.uploader import upload
 from django.conf import settings
-from django.db.models import  Q
-from django.http import HttpResponseRedirect, HttpResponse
-from django.urls import reverse
-from google.auth.transport.requests import Request
-from google.cloud import vision
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
+from django.db import transaction
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
 from rest_framework import status
 from rest_framework import parsers
-from rest_framework.decorators import action, api_view, throttle_classes
+from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
-import json
-
-from django.db.models import  Q
-from rest_framework import status, parsers
-from lib2to3.fixes.fix_input import context
-from cloudinary.uploader import upload
-from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
-from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .models import Admin, Approval, Article, CampaignLocation, Confimation, ContentPicture, DetailDonationReport, DonationCampaign, DonationPost, DonationPostApproval, DonationPostPicture, DonationReport, DonationReportPicture, Location, LocationState, SupplyType, User, UserRole
+from .models import (
+    Admin, Approval, Article, CampaignLocation, Confimation, ContentPicture,
+    DetailDonationReport, Donation, DonationCampaign, DonationPost,
+    DonationPostApproval, DonationPostHistory, DonationPostPicture, DonationReport,
+    DonationReportPicture, Location, LocationState, PaymentForm, SupplyType, User,
+    UserRole
+)
 from .news_crawler.crawler import Crawler
-from .serializers import ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer, CivilianFromUserSerializer, LocationSerializer, PostSerializer, ReportSerializer, SupplyTypeSerializer, UserSerializer
+from .serializers import (
+    ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer,
+    CivilianFromUserSerializer, LocationSerializer, PostSerializer,
+    ReportSerializer, SupplyTypeSerializer, UserSerializer
+)
 from .throttle import OncePerThirtyMinutesThrottle
-from django.core.files.storage import FileSystemStorage
-from .models import *
-from .serializers import *
-from .permissions import *
-import json
-import base64
-import requests
-from django.shortcuts import render, redirect
-import random
 from .vnpay import vnpay
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
 # Create your views here.
 LIMIT_REPORT = 5
@@ -87,16 +81,6 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
         request = super().initialize_request(request, *args, **kwargs)
         self.action = self.action_map.get(request.method.lower())
         print(request.content_type)
-        if request.method in ['POST'] and self.action == 'add_picture':
-            request.parsers = [MultiPartParser(), FileUploadParser()]
-        else:
-            request.parsers = [JSONParser()]
-        return request
-
-    def initialize_request(self, request, *args, **kwargs):
-        request = super().initialize_request(request, *args, **kwargs)
-        self.action = self.action_map.get(request.method.lower())
-        print(request.content_type)
         if request.method in ['POST'] and self.action in ['add_picture','report']:
             request.parsers = [MultiPartParser(), FileUploadParser()]
         else:
@@ -111,7 +95,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
     #     return [IsAuthenticated()]
 
     def get_queryset(self):
-        q = self.queryset;
+        q = self.queryset
         kw = self.request.query_params.get('kw')
         order_flag = self.request.query_params.get('ordered')
         if kw is not None:
@@ -120,16 +104,6 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
             print("hello")
             q = q.filter(org__badge__gt=0).order_by("-org__badge")
         return q
-
-    def initialize_request(self, request, *args, **kwargs):
-        request = super().initialize_request(request, *args, **kwargs)
-        self.action = self.action_map.get(request.method.lower())
-        print(request.content_type)
-        if request.method in ['POST'] and self.action == 'report':
-            request.parsers = [MultiPartParser(), FileUploadParser()]
-        else:
-            request.parsers = [JSONParser()]
-        return request
 
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
@@ -140,7 +114,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
             locations = request.data.pop("locations")
 
         supply_type = SupplyType.objects.filter(pk=request.data.pop('supply_type')).first()
-        if(supply_type == None):
+        if supply_type is None:
             return Response("Không tìm thấy loại hình quyên góp", status=status.HTTP_200_OK)
         try:
             with transaction.atomic():
@@ -329,49 +303,6 @@ class DonationPostViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView)
         return Response(res, status=status.HTTP_200_OK)
 
 
-    @action(methods=['POST'], detail=False)
-    def analyze_picture(self, request):
-        print("hello")
-        if "credentials" not in request.session:
-            return HttpResponseRedirect(reverse("start_oauth"))
-
-        credentials_data = json.loads(request.session["credentials"])
-        credentials = Credentials.from_authorized_user_info(credentials_data)
-
-        if not credentials.valid and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
-
-        vision_client = build("vision", "v1", credentials=credentials)
-
-        image_files = request.FILES.getlist("images")
-        for img in image_files:
-            content = base64.b64encode(img.read()).decode("utf-8")
-            data = {
-                "requests": [
-                    {
-                        "image": {"content": content},
-                        "features": [{"type": "LABEL_DETECTION", "maxResults": 5}],
-                    }
-                ]
-            }
-            response = vision_client.images().annotate(body=data).execute()
-
-            request.session["credentials"] = json.dumps({
-                "token": credentials.token,
-                "refresh_token": credentials.refresh_token,
-                "token_uri": credentials.token_uri,
-                "client_id": credentials.client_id,
-                "client_secret": credentials.client_secret,
-                "scopes": credentials.scopes,
-            })
-            print(content)
-            print(response)
-            if response.status_code == 200:
-                result = response.json()
-                labels = result["responses"][0].get("labelAnnotations", [])
-                print(labels)
-        return Response("OK", status=status.HTTP_200_OK)
-
     @transaction.atomic()
     @action(methods=['POST'], detail=True)
     def approve(self, request, pk=None):
@@ -401,6 +332,7 @@ class LocationViewSet(ViewSet, generics.ListAPIView):
         qs = Location.objects.filter(active=True).exclude(status=LocationState.NORMAL)
         return Response(LocationSerializer(qs, context={"request": request}).data, status = status.HTTP_200_OK)
 
+
 class ArticleViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
@@ -409,57 +341,25 @@ class ArticleViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
 
 
 @api_view(['GET'])
-@throttle_classes([OncePerThirtyMinutesThrottle])
 def crawl_view(request):
     topic = request.query_params.get('topic', None)
 
     if not topic:
         raise ValidationError({"error": "Missing required parameter: 'topic'"})
 
+    throttle = OncePerThirtyMinutesThrottle()
+    if not throttle.allow_request(request, crawl_view):
+        wait_time = throttle.wait()
+        return Response(
+            {"error": "Request throttled. Try again later.", "retry_after": wait_time},
+            status=429,
+        )
+
     crawler = Crawler()
     crawler.start_crawling(search_query=topic)
 
     return Response({"message": f"Crawling started successfully with topic: {topic}"})
 
-
-def start_oauth(request):
-    """Start OAuth 2.0 authorization flow."""
-    flow = Flow.from_client_secrets_file(
-        OAUTH_CREDENTIALS_FILE,
-        scopes=SCOPES,
-        redirect_uri=request.build_absolute_uri(reverse("oauth_callback"))
-    )
-    authorization_url, state = flow.authorization_url(prompt="consent")
-    request.session["oauth_state"] = state
-    print(authorization_url)
-    return HttpResponseRedirect(authorization_url)
-
-
-def oauth_callback(request):
-    """Handle the callback from the OAuth server."""
-    state = request.session.get("oauth_state")
-
-    if not state:
-        return HttpResponse("State missing in session.", status=400)
-
-    flow = Flow.from_client_secrets_file(
-        OAUTH_CREDENTIALS_FILE,
-        scopes=SCOPES,
-        state=state,
-        redirect_uri=request.build_absolute_uri(reverse("oauth_callback"))
-    )
-    flow.fetch_token(authorization_response=request.build_absolute_uri())
-
-    credentials = flow.credentials
-    request.session["credentials"] = json.dumps({
-        "token": credentials.token,
-        "refresh_token": credentials.refresh_token,
-        "token_uri": credentials.token_uri,
-        "client_id": credentials.client_id,
-        "client_secret": credentials.client_secret,
-        "scopes": credentials.scopes,
-    })
-    return HttpResponseRedirect(reverse("analyze_image"))
 
 def index(request):
     return render(request, "payment/index.html", {"title": "Danh sách demo"})
