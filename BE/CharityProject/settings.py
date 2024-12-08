@@ -83,7 +83,7 @@ TEMPLATES = [
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'ccdf-27-64-68-99.ngrok-free.app', 'pmnm.quythanh.tk']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '2274-113-161-79-11.ngrok-free.app', 'pmnm.quythanh.tk']
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -226,3 +226,22 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+#GMAIL
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'mhphat.c17nvt@gmail.com'
+EMAIL_HOST_PASSWORD = "cngx jeiy lhnk qvnh"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'default from email'
+
+# Cấu hình URL cho các tài nguyên tĩnh
+STATIC_URL = '/static/'
+
+# Thêm các thư mục chứa file tĩnh (nếu có)
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Thư mục static trong dự án
+]
+
+# Thư mục lưu trữ các file tĩnh đã thu thập
+STATIC_ROOT = BASE_DIR / "staticfiles"

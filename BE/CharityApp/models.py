@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import AbstractUser
@@ -60,7 +60,7 @@ class CharityOrg (models.Model):
 class Chat (BaseModel):
     civilian = models.ForeignKey(Civilian,on_delete=models.CASCADE, null= False, related_name="chat")
     org = models.ForeignKey(CharityOrg, on_delete=models.CASCADE, null= False, related_name="chat")
-    firebase_id = models.CharField(max_length=20, null= False)
+    firebase_id = models.CharField(max_length=20, null= True)
 
 class Badge (BaseModel):
     tittle = models.CharField(max_length=100)
@@ -105,6 +105,10 @@ class DonationReport(BaseModel):
     campaign = models.ForeignKey(DonationCampaign, on_delete=models.CASCADE)
     total_used = models.IntegerField()
     total_left = models.IntegerField(default=0)
+
+    @property
+    def is_late(self):
+        return self.created_date > self.campaign.expected_charity_end_date + timedelta(days=3)
 
 class DonationReportPicture(BaseModel):
     report = models.ForeignKey(DonationReport, related_name="pictures", on_delete=models.CASCADE)
@@ -221,3 +225,12 @@ class PaymentForm(forms.Form):
     order_desc = forms.CharField(max_length=100)
     bank_code = forms.CharField(max_length=20, required=False)
     language = forms.CharField(max_length=2)
+
+class HelpRequest(BaseModel):
+    latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
+    victim_name = models.CharField(max_length=50)
+    victim_problem = models.CharField(max_length=100)
+    victim_solution = models.TextField()
+    victim_place = models.CharField(max_length=225)
+    

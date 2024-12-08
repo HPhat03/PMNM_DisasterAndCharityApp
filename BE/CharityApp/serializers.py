@@ -137,7 +137,11 @@ class ArticleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Article
         fields = "__all__"
-
+class ChatSerializer(DynamicFieldsModelSerializer):
+    civilian = CivilianSerializer()
+    class Meta:
+        model = Chat
+        fields = "__all__"
 class CompanySettingSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = CompanySetting

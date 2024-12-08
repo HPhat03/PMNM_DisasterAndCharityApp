@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db.models import  Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
+from django.views import View
 from google.auth.transport.requests import Request
 from google.cloud import vision
 from google.oauth2.credentials import Credentials
@@ -26,6 +27,7 @@ from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from urllib3 import request
 
 from .models import Admin, Approval, Article, CampaignLocation, Confimation, ContentPicture, DetailDonationReport, DonationCampaign, DonationPost, DonationPostApproval, DonationPostPicture, DonationReport, DonationReportPicture, Location, LocationState, SupplyType, User, UserRole
 from .news_crawler.crawler import Crawler
@@ -42,12 +44,41 @@ from django.shortcuts import render, redirect
 import random
 from .vnpay import vnpay
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+
 # Create your views here.
 LIMIT_REPORT = 5
 LIMIT_REPORT_DAY = 10
 LIMIT_APPROVAL = 3
 OAUTH_CREDENTIALS_FILE = "credentials/oauth_client.json"
 SCOPES = ["https://www.googleapis.com/auth/cloud-vision"]
+
+class InitView(View):
+    def get(self, request):
+        context = {}
+        return render(request, "offline.html", context)
+def chat(request):
+    userS = request.GET.get("user_send")
+    userR = request.GET.get("user_receive")
+    type = request.GET.get('from')
+
+    if type == 'USER':
+        chat = Chat.objects.filter(civilian_id=userS, org_id=userR).first()
+        print(chat)
+        if chat is None:
+            Chat.objects.create(civilian_id=userS, org_id=userR)
+        else:
+            chat.firebase_id = f'{random.randint(1000, 9000)}'
+            chat.save()
+    elif type == 'ORG':
+        chat = Chat.objects.filter(civilian_id=userR, org_id=userS).first()
+        if chat is not None:
+            chat.firebase_id = f'{random.randint(1000, 9000)}'
+            chat.save()
+    context = {
+        "user_send" : userS,
+        "user_receive": userR
+    }
+    return render(request, "chat.html", context)
 
 class UserViewSet(ViewSet):
     queryset = User.objects.all()
@@ -210,8 +241,6 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
             return Response("Hoạt động này đã được phê duyệt báo cáo", status=status.HTTP_200_OK)
         if DonationReport.objects.filter(campaign=campagn).count() >= LIMIT_REPORT:
             return Response("Bạn đã hết số lần nộp báo cáo", status=status.HTTP_200_OK)
-        if (date.today() - campagn.expected_charity_end_date).days > LIMIT_REPORT_DAY:
-            return Response("Bạn đã quá hạn để báo cáo", status=status.HTTP_200_OK)
         with transaction.atomic():
             rp = DonationReport(campaign=campagn)
             rp.total_used = 0
@@ -261,6 +290,38 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
             approval.save()
         return Response("OK", status=status.HTTP_200_OK)
 
+    @transaction.atomic()
+    @action(methods=['POST'], detail=True)
+    def warning(self, request, pk):
+        campagn = DonationCampaign.objects.filter(pk=pk).first()
+        if campagn is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        from django.core.mail import send_mail
+        if request.data['type'] == "LATE":
+            t = send_mail(
+                subject="NHẮC NHỞ: NỘP BÁO CÁO CHIẾN DỊCH QUÁ HẠN",
+                message=f'''Xin chào quý anh chị, đại diện tổ chức chiến dịch {campagn.title},
+                Gần đây chúng tôi đã nhận được báo cáo của anh chị và đã phê duyệt thành công, tuy nhiên báo cáo đã vượt quá hạn 3 ngày nộp báo cáo theo quy định. Nhằm đảm báo một môi trường quyên góp cộng đồng công khai, minh bạch. Chúng tôi hy vọng trong các chiến dịch tới quý anh chị có thể nộp trong khoản thời gian quy định.
+                Chúng tôi xin chân thành cảm ơn quý anh chị đã xem mail này.
+                            
+                Trân trọng 
+                        ''',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[campagn.org.user_info.email]
+            )
+        elif request.data['type'] == "UNREPORT":
+            t = send_mail(
+                subject="NHẮC NHỞ: NỘP BÁO CÁO CHIẾN DỊCH",
+                message=f'''Xin chào quý anh chị, đại diện tổ chức chiến dịch {campagn.title},
+                Được biết sau khoản thời gian thực hiện hoạt động, đến nay chúng tôi vẫn chưa nhận được bất kì báo cáo hoạt động chiến dịch từ quý anh chị. Nhằm đảm báo một môi trường quyên góp cộng đồng công khai, minh bạch. Chúng tôi hy vọng anh chị có thể nộp báo cáo hoạt động của chiến dịch càng sớm càng tốt.
+                Chúng tôi xin chân thành cảm ơn quý anh chị đã xem mail này.
+
+                Trân trọng 
+                                    ''',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[campagn.org.user_info.email]
+            )
+        return Response("OK", status=status.HTTP_200_OK)
     @transaction.atomic()
     @action(methods = ['POST'], detail = True)
     def cancel(self, request, pk=None):
@@ -349,17 +410,6 @@ class DonationPostViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView)
             res = self.serializer_class(post).data
         return Response(res, status=status.HTTP_200_OK)
 
-
-    @action(methods=['POST'], detail=False)
-    def analyze_picture(self, request):
-        print("hello")
-
-        image_files = request.FILES.getlist("images")
-        for img in image_files:
-            content = base64.b64encode(img.read()).decode("utf-8")
-            label_detection(content)
-        return Response("OK", status=status.HTTP_200_OK)
-
     @transaction.atomic()
     @action(methods=['POST'], detail=True)
     def approve(self, request, pk=None):
@@ -406,6 +456,20 @@ class ArticleViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
     def get_permissions(self):
         return [AllowAny()]
 
+class ChatViewSet(ViewSet, generics.ListAPIView):
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
+
+    def get_permissions(self):
+        return [IsCharityOrg()]
+
+    def list(self, request, *args, **kwargs):
+        res = 'NULL'
+        qs = Chat.objects.filter(org_id=request.user.id).order_by('-updated_date').all()
+        if len(qs) != 0:
+            res = self.serializer_class(qs, many=True, context = {"request": request}).data
+        return Response(res, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 @throttle_classes([OncePerThirtyMinutesThrottle])
@@ -420,49 +484,8 @@ def crawl_view(request):
 
     return Response({"message": f"Crawling started successfully with topic: {topic}"})
 
-
-def start_oauth(request):
-    """Start OAuth 2.0 authorization flow."""
-    flow = Flow.from_client_secrets_file(
-        OAUTH_CREDENTIALS_FILE,
-        scopes=SCOPES,
-        redirect_uri=request.build_absolute_uri(reverse("oauth_callback"))
-    )
-    authorization_url, state = flow.authorization_url(prompt="consent")
-    request.session["oauth_state"] = state
-    print(authorization_url)
-    return HttpResponseRedirect(authorization_url)
-
-
-def oauth_callback(request):
-    """Handle the callback from the OAuth server."""
-    state = request.session.get("oauth_state")
-
-    if not state:
-        return HttpResponse("State missing in session.", status=400)
-
-    flow = Flow.from_client_secrets_file(
-        OAUTH_CREDENTIALS_FILE,
-        scopes=SCOPES,
-        state=state,
-        redirect_uri=request.build_absolute_uri(reverse("oauth_callback"))
-    )
-    flow.fetch_token(authorization_response=request.build_absolute_uri())
-
-    credentials = flow.credentials
-    request.session["credentials"] = json.dumps({
-        "token": credentials.token,
-        "refresh_token": credentials.refresh_token,
-        "token_uri": credentials.token_uri,
-        "client_id": credentials.client_id,
-        "client_secret": credentials.client_secret,
-        "scopes": credentials.scopes,
-    })
-    return HttpResponseRedirect(reverse("analyze_image"))
-
 def index(request):
     return render(request, "payment/index.html", {"title": "Danh sách demo"})
-
 
 def hmacsha512(key, data):
     byteKey = key.encode('utf-8')
@@ -731,22 +754,3 @@ def refund(request):
 
     return render(request, "payment/refund.html", {"title": "Kết quả hoàn tiền giao dịch", "response_json": response_json})
 
-def label_detection(content):
-    from google.cloud import vision
-
-    client = vision.ImageAnnotatorClient()
-
-    image = vision.Image(content=content)
-
-    response = client.label_detection(image=image)
-    labels = response.label_annotations
-    print("Labels:")
-
-    for label in labels:
-        print(label.description)
-
-    if response.error.message:
-        raise Exception(
-            "{}\nFor more info on error messages, check: "
-            "https://cloud.google.com/apis/design/errors".format(response.error.message)
-        )

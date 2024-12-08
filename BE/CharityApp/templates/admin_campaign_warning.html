@@ -1,0 +1,139 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h2>Phê duyệt và xác nhận <strong> > </strong> Cảnh báo chiến dịch</h2>
+<hr/>
+<p>Cảnh báo các chiến dịch nộp báo cáo trễ hạn hoặc chưa nộp báo cáo</p>
+
+<p><strong>Các chiến dịch nộp báo cáo trễ hạn:</strong></p>
+<table>
+  <thead>
+    <tr>
+     <th>Id</th>
+      <th>Tổ chức</th>
+      <th>Tên hoạt động, chiến dịch</th>
+      <th>Trạng thái</th>
+      <th>Ngày bắt đầu</th>
+      <th>Ngày kết thúc</th>
+      <th></th> <!-- Cột mới cho nút bấm -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for x in lates %}
+      <tr>
+      <td>{{x.campaign.id}}</td>
+      <td>{{x.campaign.org.user_info.name}}</td>
+      <td>{{x.campaign.title}}</td>
+      <td><span class="not-permitted">ĐÃ BÁO CÁO (NỘP QUÁ HẠN)</span></td>
+        <td>{{x.campaign.expected_charity_start_date}}</td>
+        <td>{{x.campaign.expected_charity_end_date}}</td>
+      <td><button onclick="approveCampaign({{x.campaign.id}}, 'LATE')">Nhắc nhở</button></td> <!-- Nút bấm -->
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<strong>Các chiến dịch chưa nộp báo cáo:</strong>
+<table>
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Tổ chức</th>
+      <th>Tên hoạt động, chiến dịch</th>
+      <th>Trạng thái</th>
+      <th>Ngày bắt đầu</th>
+      <th>Ngày kết thúc</th>
+      <th></th> <!-- Cột mới cho nút bấm -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for x in unreports %}
+      <tr>
+      <td>{{x.id}}</td>
+      <td>{{x.org.user_info.name}}</td>
+      <td>{{x.title}}</td>
+      <td><span class="not-permitted">CHƯA NỘP BÁO CÁO</span></td>
+        <td>{{x.expected_charity_start_date}}</td>
+        <td>{{x.expected_charity_end_date}}</td>
+      <td><button onclick="approveCampaign({{x.id}}, 'UNREPORT')">Nhắc nhở</button></td> <!-- Nút bấm -->
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+  }
+
+  header {
+    background-color: #f0f0f0;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  nav a {
+    text-decoration: none;
+    margin-right: 10px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 50px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+
+  .permitted {
+    color: green;
+  }
+
+  .not-permitted {
+    color: red;
+  }
+
+  button {
+    padding: 5px 10px;
+    background-color: #4CAF50; /* Màu xanh */
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #45a049; /* Màu xanh đậm hơn khi hover */
+  }
+</style>
+
+<script>
+  function approveCampaign(id, type) {
+    data = {"type":type}
+      fetch(`/donation_campaign/${id}/warning/`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+      })
+      .then(response => response.json())
+      .then(data => {
+          console.log('Success:', data);
+          window.location.href = '/admin/'
+      })
+      .catch((error) => {
+          alert(error);
+      });
+
+  }
+</script>
+{% endblock %}

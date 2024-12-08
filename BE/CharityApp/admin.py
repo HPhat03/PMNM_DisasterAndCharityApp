@@ -63,6 +63,7 @@ def StorageFollowUpPage(request):
         "storages": storages
     }
     return render(request, 'admin_storage_follow_up.html', context)
+
 def StorageFollowUpDetailPage(request, id=None):
     storages = Storage.objects.filter(active=True)
     detail = Stock.objects.filter(wareHouse__id=id)
@@ -71,6 +72,24 @@ def StorageFollowUpDetailPage(request, id=None):
         "detail": detail
     }
     return render(request, 'admin_storage_detail_follow_up.html', context)
+def CampaignWarningPage(request):
+    lates = DonationReport.objects.filter(active=True).exclude(confimation=None).all()
+    lates = list(lates)
+    for l in lates:
+        if not l.is_late:
+            lates.remove(l)
+    unreports = DonationCampaign.objects.filter(active=True).all()
+    unreports = list(unreports)
+    for r in unreports:
+        report = r.donationreport_set.exclude(confimation=None).count()
+        if report == 1:
+            unreports.remove(r)
+    context = {
+        "lates": lates,
+        "unreports": unreports
+    }
+    print(unreports)
+    return render(request, 'admin_campaign_warning.html', context)
 class MyAdminPage(admin.AdminSite):
     site_header = "THE ANTIBUG ADMIN"
     change_list_template = 'admin_approval.html'
@@ -84,7 +103,8 @@ class MyAdminPage(admin.AdminSite):
             path('post_approval/', self.admin_view(ApprovalPostPage), name='Post Approval'),
             path('post_approval/<int:id>/', self.admin_view(DetailPostApprovalePage), name='Detail Post Approval'),
             path('storage_follow_up/', self.admin_view(StorageFollowUpPage), name='storage_follow_up'),
-            path('storage_follow_up/<int:id>/', self.admin_view(StorageFollowUpDetailPage), name='storage_detail_follow_up')
+            path('storage_follow_up/<int:id>/', self.admin_view(StorageFollowUpDetailPage), name='storage_detail_follow_up'),
+            path('campaign_warning/', self.admin_view(CampaignWarningPage), name='campaign_warning'),
         ]
         return custom_urls + urls
 
@@ -140,6 +160,12 @@ class MyAdminPage(admin.AdminSite):
                     'object_name': ('Registery Approval'),
                     'admin_url': '/admin/report_approval/',
                     'name_plural': 'Campaign Approvals'
+                },
+                {
+                    'name': "Cảnh báo chiến dịch",
+                    'object_name': ('Campaign Warning'),
+                    'admin_url': '/admin/campaign_warning/',
+                    'name_plural': 'Campaign Warning'
                 }
             ]
         })

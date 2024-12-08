@@ -11,12 +11,13 @@ router.register('location', views.LocationViewSet, basename = "location")
 router.register('donation_post', views.DonationPostViewSet, basename = "donation_post")
 router.register('article', views.ArticleViewSet, basename="article")
 router.register('setting', views.SettingViewSet, basename="setting")
+router.register('chat_api', views.ChatViewSet, basename="chat_api")
 urlpatterns = [
     path('', include(router.urls)),
+    path('init', views.InitView.as_view(), name="init"),
     path('article/crawl/', views.crawl_view, name='article-crawl'),
-    path("oauth/start/", views.start_oauth, name="start_oauth"),
-    path("oauth/callback/", views.oauth_callback, name="oauth_callback"),
     path('pay', views.index, name='index'),
+    path('chat', views.chat, name='index1'),
     path('payment', views.payment, name='payment'),
     path('payment_ipn', views.payment_ipn, name='payment_ipn'),
     path('payment_return', views.payment_return, name='payment_return'),
