@@ -23,6 +23,8 @@ services:
     image: quythanh/pmnm:latest
     restart: unless-stopped
     command: python3 manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - db
     build:
       context: ./BE
       dockerfile: Dockerfile
