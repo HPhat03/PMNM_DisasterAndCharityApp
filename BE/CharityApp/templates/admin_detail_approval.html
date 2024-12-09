@@ -41,7 +41,7 @@
         <p><strong>Trạng thái:</strong> <span class="permitted">Chờ xét duyệt</span></p>
         <p><strong>Bài báo tham khảo:</strong>
         <ul>
-            {% for art in details.enclosed_article.all%}
+            {% for art in detail.enclosed_article.all%}
             <li><a href="{{art.real_path}}">{{art.title}}</a></li>
             {% endfor %}
         </ul>

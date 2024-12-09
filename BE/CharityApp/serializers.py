@@ -1,5 +1,6 @@
 from dataclasses import fields
 
+from pyasn1_modules.rfc2560 import TBSRequest
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import *
@@ -145,4 +146,29 @@ class ChatSerializer(DynamicFieldsModelSerializer):
 class CompanySettingSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = CompanySetting
+        fields = "__all__"
+class DonationSerializer(DynamicFieldsModelSerializer):
+    civilian = CivilianSerializer()
+    campaign =  CampaignLocationDynamidSerializer(fields=['id','location'])
+    class Meta:
+        model = Donation
+        fields = "__all__"
+
+class DonationReportPictureSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = DonationReportPicture
+        fields = "__all__"
+class DonationReportDetailSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = DetailDonationReport
+        fields = "__all__"
+class CampaignReportSerializer(DynamicFieldsModelSerializer):
+    pictures = DonationReportPictureSerializer(fields= ['path'], many=True)
+    details = DonationReportDetailSerializer(fields= ['id','paid_for', 'paid'], many=True)
+    class Meta:
+        model = DonationReport
+        fields = "__all__"
+class HelpRequestSerializer(DynamicFieldsModelSerializer):
+    class Meta:
+        model = HelpRequest
         fields = "__all__"

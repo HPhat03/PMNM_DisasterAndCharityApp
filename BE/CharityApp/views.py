@@ -27,14 +27,15 @@ from .models import (
     ContentPicture, DetailDonationReport, Donation, DonationCampaign, DonationPost,
     DonationPostApproval, DonationPostHistory, DonationPostPicture, DonationReport,
     DonationReportPicture, Location, LocationState, PaymentForm, SupplyType, User,
-    UserRole
+    UserRole, HelpRequest
 )
 from .news_crawler.crawler import Crawler
 from .permissions import IsCharityOrg
 from .serializers import (
     ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer, ChatSerializer,
     CivilianFromUserSerializer, CompanySettingSerializer, LocationSerializer,
-    PostSerializer, ReportSerializer, SupplyTypeSerializer, UserSerializer
+    PostSerializer, ReportSerializer, SupplyTypeSerializer, UserSerializer, DonationSerializer,
+    CampaignReportSerializer, HelpRequestSerializer
 )
 from .throttle import OncePerThirtyMinutesThrottle
 from .vnpay import vnpay
@@ -43,8 +44,6 @@ from .vnpay import vnpay
 LIMIT_REPORT = 5
 LIMIT_REPORT_DAY = 10
 LIMIT_APPROVAL = 3
-OAUTH_CREDENTIALS_FILE = "credentials/oauth_client.json"
-SCOPES = ["https://www.googleapis.com/auth/cloud-vision"]
 
 class InitView(View):
     def get(self, request):
@@ -111,19 +110,20 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
     def initialize_request(self, request, *args, **kwargs):
         request = super().initialize_request(request, *args, **kwargs)
         self.action = self.action_map.get(request.method.lower())
-        print(request.content_type)
+
         if request.method in ['POST'] and self.action in ['add_picture','report']:
             request.parsers = [MultiPartParser(), FileUploadParser()]
         else:
+            print(request.content_type)
             request.parsers = [JSONParser()]
         return request
 
-    # def get_permissions(self):
-    #     if self.action in ['approve','add_picture', 'report_approve']:
-    #         return [AllowAny()]
-    #     if self.action == 'create':
-    #         return [IsAuthenticated()]
-    #     return [IsAuthenticated()]
+    def get_permissions(self):
+        if self.action in ['approve','add_picture', 'report_approve']:
+            return [AllowAny()]
+        if self.action == 'create':
+            return [IsAuthenticated()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         q = self.queryset
@@ -139,10 +139,14 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
     @transaction.atomic()
     def create(self, request, *args, **kwargs):
         res = "Not OK"
-        if "locations" not in request.data:
+        if "locations" not in request.data.keys():
             return Response("chưa có nơi cứu trợ", status=status.HTTP_200_OK)
         else:
             locations = request.data.pop("locations")
+
+        enclosed = None
+        if "enclosed" in request.data.keys():
+            enclosed = request.data.pop("enclosed")
 
         supply_type = SupplyType.objects.filter(pk=request.data.pop('supply_type')).first()
         if supply_type is None:
@@ -170,8 +174,8 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
                 if tmp == 0:
                     raise ValueError("ko tìm thấy bất kì nơi cứu trợ nào")
 
-                if "enclosed" in request.data.keys():
-                    for enc in request.data["enclosed"]:
+                if enclosed:
+                    for enc in enclosed:
                         tmp = Article.objects.filter(pk=enc).first()
                         if tmp is None:
                             continue
@@ -339,6 +343,28 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
         res = "OK"
         return Response(res, status=status.HTTP_200_OK)
 
+    @transaction.atomic()
+    @action(methods=['GET'], detail=True)
+    def history(self, request, pk=None):
+        res = "Not OK"
+        campagn = Donation.objects.filter(campaign__campaign_id=pk).all()
+        if campagn is None or len(campagn) == 0:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        print(campagn)
+        res = DonationSerializer(campagn, many=True, context={"request": request}).data
+        return Response(res, status=status.HTTP_200_OK)
+
+    @transaction.atomic()
+    @action(methods=['GET'], detail=True)
+    def report(self, request, pk=None):
+        res = "Not OK"
+        campagn = DonationReport.objects.filter(campaign_id=pk).exclude(confimation=None).order_by('-created_date').first()
+        if campagn is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        print(campagn)
+        res = CampaignReportSerializer(campagn, context={"request": request}).data
+        return Response(res, status=status.HTTP_200_OK)
+
 class DonationReportViewSet(ViewSet, generics.ListAPIView):
     queryset = DonationReport.objects.filter(active=True)
     serializer_class = ReportSerializer
@@ -444,6 +470,25 @@ class ChatViewSet(ViewSet, generics.ListAPIView):
             res = self.serializer_class(qs, many=True, context = {"request": request}).data
         return Response(res, status=status.HTTP_200_OK)
 
+class LocationViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer
+    def get_permissions(self):
+        return [IsAuthenticated()]
+
+    def list(self, request, *args, **kwargs):
+        res = "Not OK"
+        name = request.query_params.get('location')
+        print(name)
+        qs = Location.objects.filter(location=name).first()
+        print(qs)
+        if qs is not None:
+            res = self.serializer_class(qs, context={"request": request}).data
+        return Response(res, status=status.HTTP_200_OK)
+
+class HelpRequestViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
+    queryset = HelpRequest.objects.all()
+    serializer_class = HelpRequestSerializer
 
 @api_view(['GET'])
 def crawl_view(request):
