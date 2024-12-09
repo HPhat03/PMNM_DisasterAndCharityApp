@@ -12,6 +12,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from django.views import View
 from rest_framework import status
 from rest_framework import parsers
 from rest_framework.decorators import action, api_view
@@ -20,25 +21,23 @@ from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from urllib3 import request
 
 from .models import (
-    Admin, Approval, Article, CampaignLocation, CompanySetting, Confimation,
+    Admin, Approval, Article, CampaignLocation, Chat, CompanySetting, Confimation,
     ContentPicture, DetailDonationReport, Donation, DonationCampaign, DonationPost,
     DonationPostApproval, DonationPostHistory, DonationPostPicture, DonationReport,
     DonationReportPicture, Location, LocationState, PaymentForm, SupplyType, User,
     UserRole
 )
 from .news_crawler.crawler import Crawler
+from .permissions import IsCharityOrg
 from .serializers import (
-    ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer,
+    ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer, ChatSerializer,
     CivilianFromUserSerializer, CompanySettingSerializer, LocationSerializer,
     PostSerializer, ReportSerializer, SupplyTypeSerializer, UserSerializer
 )
 from .throttle import OncePerThirtyMinutesThrottle
 from .vnpay import vnpay
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
 # Create your views here.
 LIMIT_REPORT = 5
