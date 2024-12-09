@@ -32,3 +32,5 @@ services:
       - 8000:8000
     volumes:
       - ./BE:/app
+    env_file:
+      - ./BE/.env
