@@ -233,8 +233,7 @@ class PaymentForm(forms.Form):
 class HelpRequest(BaseModel):
     latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
-    victim_name = models.CharField(max_length=50)
-    victim_problem = models.CharField(max_length=100)
+    victim_name = models.CharField(max_length=50, null=True)
+    victim_problem = models.CharField(max_length=100, null=True)
     victim_solution = models.TextField()
-    victim_place = models.CharField(max_length=225)
-    
+    victim_place = models.CharField(max_length=225, null=True)

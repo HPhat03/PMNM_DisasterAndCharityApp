@@ -12,6 +12,7 @@ router.register('donation_post', views.DonationPostViewSet, basename = "donation
 router.register('article', views.ArticleViewSet, basename="article")
 router.register('setting', views.SettingViewSet, basename="setting")
 router.register('chat_api', views.ChatViewSet, basename="chat_api")
+router.register('help_request', views.HelpRequestViewSet, basename="help_request")
 urlpatterns = [
     path('', include(router.urls)),
     path('init', views.InitView.as_view(), name="init"),

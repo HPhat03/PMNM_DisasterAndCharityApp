@@ -164,7 +164,7 @@ python3 manage.py runserver
 
 3. **Set Up Appsmith**
 
-...
+![](./assets/appsmith_import_app_json.gif)
 
 # Contributing
 
