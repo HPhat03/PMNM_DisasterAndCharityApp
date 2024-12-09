@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
-from tutorial.settings import BASE_DIR
+# from tutorial.settings import BASE_DIR
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -83,7 +83,7 @@ TEMPLATES = [
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'ccdf-27-64-68-99.ngrok-free.app', 'pmnm.quythanh.tk']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'ce17-27-64-63-2.ngrok-free.app', 'pmnm.quythanh.tk']
 CSRF_TRUSTED_ORIGINS = ["https://pmnm.quythanh.tk"]
 
 # Database
@@ -99,8 +99,8 @@ DATABASES = {
     #     'ENGINE': 'django.db.backends.mysql',
     #     'NAME': 'charity_db',
     #     'USER': 'root',
-    #     'PASSWORD': 'PandaPhat2003@',
-    #     'HOST': 'localhost',
+    #     'PASSWORD': 'root',
+    #     'HOST': 'db',
     #     'PORT': '3306',
     # }
 }

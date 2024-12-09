@@ -72,6 +72,11 @@ def StorageFollowUpDetailPage(request, id=None):
         "detail": detail
     }
     return render(request, 'admin_storage_detail_follow_up.html', context)
+
+def HelpRequestPage(request, id=None):
+    context = {}
+    return render(request, 'admin_help_request.html', context)
+
 def CampaignWarningPage(request):
     lates = DonationReport.objects.filter(active=True).exclude(confimation=None).all()
     lates = list(lates)
@@ -105,6 +110,7 @@ class MyAdminPage(admin.AdminSite):
             path('storage_follow_up/', self.admin_view(StorageFollowUpPage), name='storage_follow_up'),
             path('storage_follow_up/<int:id>/', self.admin_view(StorageFollowUpDetailPage), name='storage_detail_follow_up'),
             path('campaign_warning/', self.admin_view(CampaignWarningPage), name='campaign_warning'),
+            path('help_request/', self.admin_view(HelpRequestPage), name='help_request')
         ]
         return custom_urls + urls
 
@@ -175,6 +181,7 @@ class MyAdminPage(admin.AdminSite):
             'app_label': 'Company Setting',
             'models': [company_setting, supply_type]
         })
+
         app_list.append({
             'name': ('Kho'),
             'app_label': 'Storage',
@@ -186,6 +193,18 @@ class MyAdminPage(admin.AdminSite):
                            'name_plural': 'Storage Follow up'
                        }
                        ]
+        })
+        app_list.append({
+            'name': ('Cứu hộ, cứu nạn'),
+            'app_label': 'Saving',
+            'models': [
+                {
+                    'name': "Kênh liên lạc khẩn cấp",
+                    'object_name': ('Emergency'),
+                    'admin_url': '/admin/help_request/',
+                    'name_plural': 'Help Requests'
+                }
+            ]
         })
         return app_list
 class CampaignAdmin(admin.ModelAdmin):
