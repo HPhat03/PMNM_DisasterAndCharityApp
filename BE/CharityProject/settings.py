@@ -99,8 +99,8 @@ DATABASES = {
     #     'ENGINE': 'django.db.backends.mysql',
     #     'NAME': 'charity_db',
     #     'USER': 'root',
-    #     'PASSWORD': 'PandaPhat2003@',
-    #     'HOST': 'localhost',
+    #     'PASSWORD': 'root',
+    #     'HOST': 'db',
     #     'PORT': '3306',
     # }
 }

@@ -1,4 +1,14 @@
 services:
+  db:
+    container_name: db
+    image: mariadb:11.3.2-jammy
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: charity-db
+    volumes:
+      - ./mariadb:/var/lib/mysql
+    ports:
+      - 3306:3306
   appsmith:
     image: index.docker.io/appsmith/appsmith-ce
     container_name: appsmith
