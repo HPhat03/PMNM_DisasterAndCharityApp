@@ -20,6 +20,8 @@ from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from urllib3 import request
 
 from .models import (
     Admin, Approval, Article, CampaignLocation, CompanySetting, Confimation,
@@ -36,7 +38,7 @@ from .serializers import (
 )
 from .throttle import OncePerThirtyMinutesThrottle
 from .vnpay import vnpay
-
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 
 # Create your views here.
 LIMIT_REPORT = 5
@@ -44,6 +46,34 @@ LIMIT_REPORT_DAY = 10
 LIMIT_APPROVAL = 3
 OAUTH_CREDENTIALS_FILE = "credentials/oauth_client.json"
 SCOPES = ["https://www.googleapis.com/auth/cloud-vision"]
+
+class InitView(View):
+    def get(self, request):
+        context = {}
+        return render(request, "offline.html", context)
+def chat(request):
+    userS = request.GET.get("user_send")
+    userR = request.GET.get("user_receive")
+    type = request.GET.get('from')
+
+    if type == 'USER':
+        chat = Chat.objects.filter(civilian_id=userS, org_id=userR).first()
+        print(chat)
+        if chat is None:
+            Chat.objects.create(civilian_id=userS, org_id=userR)
+        else:
+            chat.firebase_id = f'{random.randint(1000, 9000)}'
+            chat.save()
+    elif type == 'ORG':
+        chat = Chat.objects.filter(civilian_id=userR, org_id=userS).first()
+        if chat is not None:
+            chat.firebase_id = f'{random.randint(1000, 9000)}'
+            chat.save()
+    context = {
+        "user_send" : userS,
+        "user_receive": userR
+    }
+    return render(request, "chat.html", context)
 
 class UserViewSet(ViewSet):
     queryset = User.objects.all()
@@ -186,8 +216,6 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
             return Response("Hoạt động này đã được phê duyệt báo cáo", status=status.HTTP_200_OK)
         if DonationReport.objects.filter(campaign=campagn).count() >= LIMIT_REPORT:
             return Response("Bạn đã hết số lần nộp báo cáo", status=status.HTTP_200_OK)
-        if (date.today() - campagn.expected_charity_end_date).days > LIMIT_REPORT_DAY:
-            return Response("Bạn đã quá hạn để báo cáo", status=status.HTTP_200_OK)
         with transaction.atomic():
             rp = DonationReport(campaign=campagn)
             rp.total_used = 0
@@ -237,6 +265,38 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
             approval.save()
         return Response("OK", status=status.HTTP_200_OK)
 
+    @transaction.atomic()
+    @action(methods=['POST'], detail=True)
+    def warning(self, request, pk):
+        campagn = DonationCampaign.objects.filter(pk=pk).first()
+        if campagn is None:
+            return Response("Không tồn tại", status=status.HTTP_200_OK)
+        from django.core.mail import send_mail
+        if request.data['type'] == "LATE":
+            t = send_mail(
+                subject="NHẮC NHỞ: NỘP BÁO CÁO CHIẾN DỊCH QUÁ HẠN",
+                message=f'''Xin chào quý anh chị, đại diện tổ chức chiến dịch {campagn.title},
+                Gần đây chúng tôi đã nhận được báo cáo của anh chị và đã phê duyệt thành công, tuy nhiên báo cáo đã vượt quá hạn 3 ngày nộp báo cáo theo quy định. Nhằm đảm báo một môi trường quyên góp cộng đồng công khai, minh bạch. Chúng tôi hy vọng trong các chiến dịch tới quý anh chị có thể nộp trong khoản thời gian quy định.
+                Chúng tôi xin chân thành cảm ơn quý anh chị đã xem mail này.
+                            
+                Trân trọng 
+                        ''',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[campagn.org.user_info.email]
+            )
+        elif request.data['type'] == "UNREPORT":
+            t = send_mail(
+                subject="NHẮC NHỞ: NỘP BÁO CÁO CHIẾN DỊCH",
+                message=f'''Xin chào quý anh chị, đại diện tổ chức chiến dịch {campagn.title},
+                Được biết sau khoản thời gian thực hiện hoạt động, đến nay chúng tôi vẫn chưa nhận được bất kì báo cáo hoạt động chiến dịch từ quý anh chị. Nhằm đảm báo một môi trường quyên góp cộng đồng công khai, minh bạch. Chúng tôi hy vọng anh chị có thể nộp báo cáo hoạt động của chiến dịch càng sớm càng tốt.
+                Chúng tôi xin chân thành cảm ơn quý anh chị đã xem mail này.
+
+                Trân trọng 
+                                    ''',
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[campagn.org.user_info.email]
+            )
+        return Response("OK", status=status.HTTP_200_OK)
     @transaction.atomic()
     @action(methods = ['POST'], detail = True)
     def cancel(self, request, pk=None):
@@ -371,6 +431,20 @@ class ArticleViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
     def get_permissions(self):
         return [AllowAny()]
 
+class ChatViewSet(ViewSet, generics.ListAPIView):
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
+
+    def get_permissions(self):
+        return [IsCharityOrg()]
+
+    def list(self, request, *args, **kwargs):
+        res = 'NULL'
+        qs = Chat.objects.filter(org_id=request.user.id).order_by('-updated_date').all()
+        if len(qs) != 0:
+            res = self.serializer_class(qs, many=True, context = {"request": request}).data
+        return Response(res, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 def crawl_view(request):
@@ -411,7 +485,6 @@ def init_article_view(request):
 
 def index(request):
     return render(request, "payment/index.html", {"title": "Danh sách demo"})
-
 
 def hmacsha512(key, data):
     byteKey = key.encode('utf-8')

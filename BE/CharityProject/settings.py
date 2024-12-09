@@ -227,3 +227,22 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+#GMAIL
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'mhphat.c17nvt@gmail.com'
+EMAIL_HOST_PASSWORD = "cngx jeiy lhnk qvnh"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'default from email'
+
+# Cấu hình URL cho các tài nguyên tĩnh
+STATIC_URL = '/static/'
+
+# Thêm các thư mục chứa file tĩnh (nếu có)
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Thư mục static trong dự án
+]
+
+# Thư mục lưu trữ các file tĩnh đã thu thập
+STATIC_ROOT = BASE_DIR / "staticfiles"

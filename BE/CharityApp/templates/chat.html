@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat App</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    #chat-container {
+      max-width: 600px;
+      margin: 0 auto;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+    }
+    #messages {
+      list-style: none;
+      padding: 0;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+      height: 400px;
+    }
+    #messages li {
+      border-bottom: 1px solid #eee;
+    }
+    #message-form {
+      display: flex;
+    }
+    #message-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #send-button {
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-left: 10px;
+    }
+    #send-button:hover {
+      background-color: #0056b3;
+    }
+    .message {
+      display: flex;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 10px;
+      max-width: 100%;
+      flex-direction: column;
+    }
+    .message.user-send {
+      align-self: flex-start;
+      background-color: #d0eaff;
+      max-width: 80%;
+    }
+    .message.user-receive {
+      align-self: flex-end;
+      background-color: #dfffd0;
+      max-width: 80%;
+    }
+    .timestamp {
+      font-size: 12px;
+      color: #888;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="messages"></div>
+    <form id="message-form">
+      <input type="text" id="message-input" placeholder="Type a message..." required />
+      <button type="submit" id="send-button">Send</button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+    import { getDatabase, ref, set, onChildAdded } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyAhFrrnXPbQixBQrXVcKEAMD6sMZVK47mM",
+      authDomain: "disasterandcharityapp.firebaseapp.com",
+      databaseURL: "https://disasterandcharityapp-default-rtdb.firebaseio.com",
+      projectId: "disasterandcharityapp",
+      storageBucket: "disasterandcharityapp.firebasestorage.app",
+      messagingSenderId: "940334375534",
+      appId: "1:940334375534:web:21167a9470b3406ae1fc7f",
+      measurementId: "G-72L8KKMZSW"
+    };
+
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const userSend = "{{ user_send }}";
+    const userReceive = "{{ user_receive }}";
+    const chatId = [userSend, userReceive].sort().join("_");
+    const messagesRef = ref(db, `messages/${chatId}`);
+
+
+    const messagesList = document.getElementById("messages");
+    const messageForm = document.getElementById("message-form");
+    const messageInput = document.getElementById("message-input");
+
+    onChildAdded(messagesRef, (snapshot) => {
+      const message = snapshot.val();
+      const li = document.createElement("div");
+
+      if (message.sender === userSend) {
+        li.classList.add("message", "user-send");
+      } else if (message.sender === userReceive) {
+        li.classList.add("message", "user-receive");
+      }
+      li.textContent = `${message.text}`;
+
+      const timestamp = new Date(message.timestamp).toLocaleString();
+      const timeElem = document.createElement("div");
+      timeElem.classList.add("timestamp");
+      timeElem.textContent = timestamp;
+
+      li.appendChild(timeElem);
+      messagesList.appendChild(li);
+      messagesList.scrollTop = messagesList.scrollHeight;
+    });
+
+    messageForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      const message = {
+        sender: userSend,
+        receiver: userReceive,
+        text: text,
+        timestamp: Date.now()
+      };
+      set(ref(db, `messages/${chatId}/${Date.now()}`), message);
+      messageInput.value = "";
+    });
+  </script>
+</body>
+</html>
