@@ -16,6 +16,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('init', views.InitView.as_view(), name="init"),
     path('article/crawl/', views.crawl_view, name='article-crawl'),
+    path('article/init/', views.init_article_view, name='article-init-crawl'),
     path('pay', views.index, name='index'),
     path('chat', views.chat, name='index1'),
     path('payment', views.payment, name='payment'),

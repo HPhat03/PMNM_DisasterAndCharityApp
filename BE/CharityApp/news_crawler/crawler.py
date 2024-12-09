@@ -1,5 +1,6 @@
 import concurrent.futures
 import sys
+import urllib
 from datetime import date
 from pathlib import Path
 
@@ -7,9 +8,9 @@ import requests
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
-from .utils import create_dir, get_text_from_tag, init_output_dirs, read_file
+from .utils import extract_location_status, get_text_from_tag, init_output_dirs, read_file
 from .models import CrawlArticle
-from ..models import Article
+from ..models import Article, Location
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[1]  # root directory
@@ -18,10 +19,11 @@ if str(ROOT) not in sys.path:
 
 
 class Crawler:
-    def __init__(self, num_workers=1, output_dpath="result", total_pages=1):
+    def __init__(self, num_workers=1, output_dpath="result", total_pages=1, init=False):
         self.num_workers = num_workers
         self.output_dpath = output_dpath
         self.total_pages = total_pages
+        self.isInit = init
 
     def extract_content(self, url) -> CrawlArticle | None:
         """
@@ -86,6 +88,14 @@ class Crawler:
             updated_date=article.date,
         )
 
+        location_status = extract_location_status("\n".join(list(article.paragraphs)))
+
+        for location in location_status:
+            Location.objects.create(
+                location=location["city"],
+                current_status=location["status"]
+            )
+
         return True
 
     def get_urls_of_search_thread(self, search_query, page_number) -> list:
@@ -97,7 +107,30 @@ class Crawler:
 
         @return articles_urls (list): List of article URLs from the search result page.
         """
-        page_url = f"https://timkiem.vnexpress.net/?q={search_query}&media_type=text&fromdate=0&todate=0&latest=on&cate_code=&search_f=title,tag_list&date_format=all&page={page_number}"
+        host = "https://timkiem.vnexpress.net"
+        common_query = {
+            "media_type": "text",
+            "q": search_query,
+            "cate_code": "thoi-su",
+        }
+        if self.isInit:
+            query = {
+                **common_query,
+                "fromdate": 0,
+                "todate": 0,
+                "latest": "on",
+                "search_f": "title,tag_list",
+                "date_format": "all",
+                "page": page_number
+            }
+        else:
+            query = {
+                **common_query,
+                "search_f": "",
+                "date_format": "day"
+            }
+
+        page_url = f"{host}/?{urllib.parse.urlencode(query)}"
         content = requests.get(page_url).content
         soup = BeautifulSoup(content, "html.parser")
         titles = soup.find_all(class_="title-news")
@@ -121,7 +154,7 @@ class Crawler:
         """
         Crawls pages of search results for a given query, extracting article URLs from each page.
         """
-        urls_dpath, results_dpath = init_output_dirs(self.output_dpath)
+        urls_dpath = init_output_dirs(self.output_dpath)
 
         print(f"Crawl search results for query '{search_query}'...")
         error_urls: list
@@ -135,30 +168,27 @@ class Crawler:
 
         # crawling url
         print(f"Crawling from urls of query '{search_query}'...")
-        results_type_dpath = "/".join([results_dpath, search_query])
-        error_urls = self.crawl_urls(articles_urls_fpath, results_type_dpath)
+        error_urls = self.crawl_urls(articles_urls_fpath)
 
         return error_urls
 
-    def crawl_urls(self, urls_fpath, output_dpath):
+    def crawl_urls(self, urls_fpath):
         """
         Crawling contents from a list of urls
         Returns:
             list of failed urls
         """
         print(f"Start crawling urls from {urls_fpath} file...")
-        create_dir(output_dpath)
         urls = list(read_file(urls_fpath))
         num_urls = len(urls)
 
-        args = ([output_dpath]*num_urls, urls, range(num_urls))
+        args = (urls, range(num_urls))
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.num_workers) as executor:
             results = list(tqdm(executor.map(self.crawl_url_thread, *args), total=num_urls, desc="URLs"))
 
-        print(f"Saving crawling result into {output_dpath} directory...")
         return [result for result in results if result is not None]
 
-    def crawl_url_thread(self, output_dpath, url, index):
+    def crawl_url_thread(self, url, index):
         """ Crawling content of the specific url """
         article = self.extract_content(url)
         is_success = self.write_content(article)
