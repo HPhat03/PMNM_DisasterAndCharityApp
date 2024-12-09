@@ -7,6 +7,7 @@ from datetime import datetime, date
 import requests
 from cloudinary.uploader import upload
 from django.conf import settings
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
@@ -387,6 +388,22 @@ def crawl_view(request):
         )
 
     crawler = Crawler(num_workers=2)
+    crawler.start_crawling(search_query=topic)
+
+    return Response({"message": f"Crawling started successfully with topic: {topic}"})
+
+
+@api_view(['GET'])
+def init_article_view(request):
+    crawl_status = cache.get('article_crawl_status')
+    if crawl_status:
+        return Response({"error": "This endpoint can only be called once during the system's lifetime."}, status=403)
+
+    topic = request.query_params.get('topic', None)
+    if not topic:
+        raise ValidationError({"error": "Missing required parameter: 'topic'"})
+
+    crawler = Crawler(num_workers=2, init=True)
     crawler.start_crawling(search_query=topic)
 
     return Response({"message": f"Crawling started successfully with topic: {topic}"})
