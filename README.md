@@ -129,7 +129,13 @@ git clone https://github.com/HPhat03/PMNM_DisasterAndCharityApp.git
 cd PMNM_DisasterAndCharityApp
 ```
 
-2. **Run Project**
+2. **Create .env**
+
+```bash
+echo OPENAI_KEY=<your key here> >> ./BE/.env
+```
+
+3. **Run Project**
 
 ```bash
 docker compose up -d
@@ -163,6 +169,12 @@ source .venv/bin/activate
 
 ```bash
 pip install -r requirements.txt
+```
+
+- Create .env:
+
+```bash
+echo OPENAI_KEY=<your key here> >> .env
 ```
 
 - Run migrations:
