@@ -486,9 +486,13 @@ class LocationViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
             res = self.serializer_class(qs, context={"request": request}).data
         return Response(res, status=status.HTTP_200_OK)
 
-class HelpRequestViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
+class HelpRequestViewSet(ViewSet, generics.ListAPIView):
     queryset = HelpRequest.objects.all()
     serializer_class = HelpRequestSerializer
+
+    def create(self, request, *args, **kwargs):
+        HelpRequest.objects.create(latitude= request.data['latitude'], longitude=request.data['longitude'])
+        return Response('OK', status = status.HTTP_200_OK)
 
 @api_view(['GET'])
 def crawl_view(request):

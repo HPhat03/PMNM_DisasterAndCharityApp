@@ -1,0 +1,22 @@
+<!-- templates/admin/base_site.html -->
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <!-- Thêm tệp CSS của Spectrum -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.7/dist/spectrum.min.css">
+{% endblock %}
+
+{% block extrafoot %}
+    {{ block.super }}
+    <h1>HELLO</h1>
+    <script src="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2@2.0.7/dist/spectrum.min.js"></script>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            $('#id_color').spectrum({
+                color: "#f00",
+                showInput: true,
+            });
+        });
+    </script>
+{% endblock %}

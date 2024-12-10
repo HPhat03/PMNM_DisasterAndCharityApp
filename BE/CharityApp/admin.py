@@ -9,6 +9,9 @@ from django.shortcuts import render
 from pycparser.c_ast import Return
 
 from .models import *
+from .news_crawler.crawler import Crawler
+
+
 # Register your models here.
 
 def ApprovalPage(request):
@@ -75,7 +78,7 @@ def StorageFollowUpDetailPage(request, id=None):
 
 def HelpRequestPage(request, id=None):
     context = {}
-    return render(request, 'admin_help_request.html', context)
+    return render(request, 'map_help_request.html', context)
 
 def CampaignWarningPage(request):
     lates = DonationReport.objects.filter(active=True).exclude(confimation=None).all()
@@ -221,6 +224,22 @@ class CampaignAdmin(admin.ModelAdmin):
 
 class CompanySettingAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'topic', 'is_chosen']
+    form = SettingForm
+
+    def save_model(self, request, obj, form, change):
+        count = CompanySetting.objects.filter(active=True, is_chosen = True).count()
+        if obj.is_chosen:
+            if count > 0:
+                CompanySetting.objects.filter(active=True, is_chosen = True).update(is_chosen=False)
+        else:
+            if count == 0:
+                obj.is_chosen = True
+        super().save_model(request, obj, form, change)
+
+        Article.objects.all().delete()
+        crawler = Crawler(num_workers=2, init=True)
+        crawler.start_crawling(search_query=obj.topic)
+
 class SupplyTypeAdmin(admin.ModelAdmin):
     list_display = ['id', 'type', 'unit', 'active']
 class StockApplyAdmin(admin.ModelAdmin):

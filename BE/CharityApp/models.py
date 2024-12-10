@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from cloudinary.models import CloudinaryField
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.forms import TextInput
 from django_enumfield import enum
 from django import forms
 
@@ -219,8 +220,25 @@ class CompanySetting(BaseModel):
     button_color = models.CharField(max_length=20)
     log_color = models.CharField(max_length=20)
     logo = models.CharField(max_length=200)
-    stat_data_source = models.CharField(max_length= 100)
     is_chosen = models.BooleanField(default=False)
+    deploy_path = models.CharField(max_length=255)
+    openai_key = models.CharField(max_length=255)
+
+class HelpRequest(BaseModel):
+    latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
+    location = models.ForeignKey(Location, related_name='help_request', on_delete=models.CASCADE, null=True)
+    victim_name = models.CharField(max_length=50, null=True)
+    victim_problem = models.CharField(max_length=100, null=True)
+    victim_solution = models.TextField()
+    victim_place = models.CharField(max_length=225, null=True)
+    is_helping = models.BooleanField(default=False)
+
+class CameraLocation(BaseModel):
+    camera_code = models.CharField(max_length=20)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, default=0.0, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, default=0.0, null=True)
+    location = models.ForeignKey(Location, related_name='cameras', on_delete=models.CASCADE)
 
 class PaymentForm(forms.Form):
     order_id = forms.CharField(max_length=250)
@@ -230,10 +248,29 @@ class PaymentForm(forms.Form):
     bank_code = forms.CharField(max_length=20, required=False)
     language = forms.CharField(max_length=2)
 
-class HelpRequest(BaseModel):
-    latitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6,default=0.0, null=True)
-    victim_name = models.CharField(max_length=50, null=True)
-    victim_problem = models.CharField(max_length=100, null=True)
-    victim_solution = models.TextField()
-    victim_place = models.CharField(max_length=225, null=True)
+class SettingForm(forms.ModelForm):
+    class Meta:
+        model = CompanySetting
+        fields= "__all__"
+        widgets = {
+            'primary_color': TextInput(attrs={
+                'class': 'color-picker',
+                'type': 'color',
+                'style': 'width: 100px;'
+            }),
+            'secondary_color': TextInput(attrs={
+                'class': 'color-picker',
+                'type': 'color',
+                'style': 'width: 100px;'
+            }),
+            'button_color': TextInput(attrs={
+                'class': 'color-picker',
+                'type': 'color',
+                'style': 'width: 100px;'
+            }),
+            'log_color': TextInput(attrs={
+                'class': 'color-picker',
+                'type': 'color',
+                'style': 'width: 100px;'
+            })
+        }
