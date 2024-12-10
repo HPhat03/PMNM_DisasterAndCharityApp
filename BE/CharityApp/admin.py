@@ -3,6 +3,7 @@ from tkinter.font import names
 
 from django.contrib import admin, messages
 from django.core.files.storage import storages
+from django.db import transaction
 from django.db.models import Sum
 from django.urls import path
 from django.shortcuts import render
@@ -20,6 +21,7 @@ def ApprovalPage(request):
         "registeries" : registeries
     }
     return render(request, 'admin_approval.html', context)
+
 def DetailApprovalePage(request, id = None):
     detail = DonationCampaign.objects.filter(pk=id).first()
     approval = Approval.objects.filter(donation_id=id,is_approved=None).first()
@@ -76,9 +78,13 @@ def StorageFollowUpDetailPage(request, id=None):
     }
     return render(request, 'admin_storage_detail_follow_up.html', context)
 
-def HelpRequestPage(request, id=None):
-    context = {}
-    return render(request, 'map_help_request.html', context)
+def HelpRequestPage(request):
+    currentRequest = HelpRequest.objects.filter(active=True,is_helping=False).first()
+    print(currentRequest)
+    context = {
+        "help_request": currentRequest
+    }
+    return render(request, 'admin_help_request.html', context)
 
 def CampaignWarningPage(request):
     lates = DonationReport.objects.filter(active=True).exclude(confimation=None).all()
@@ -226,19 +232,21 @@ class CompanySettingAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'topic', 'is_chosen']
     form = SettingForm
 
+    @transaction.atomic()
     def save_model(self, request, obj, form, change):
-        count = CompanySetting.objects.filter(active=True, is_chosen = True).count()
-        if obj.is_chosen:
-            if count > 0:
-                CompanySetting.objects.filter(active=True, is_chosen = True).update(is_chosen=False)
-        else:
-            if count == 0:
-                obj.is_chosen = True
-        super().save_model(request, obj, form, change)
+        with transaction.atomic():
+            count = CompanySetting.objects.filter(active=True, is_chosen = True).first()
+            if obj.is_chosen:
+                if count != None:
+                    CompanySetting.objects.filter(active=True, is_chosen = True).update(is_chosen=False)
+                if count.id != obj.id or (count.id == obj.id and count.topic != obj.topic):
+                    Article.objects.all().delete()
+            else:
+                if count == None:
+                    obj.is_chosen = True
+                    Article.objects.all().delete()
+            super().save_model(request, obj, form, change)
 
-        Article.objects.all().delete()
-        crawler = Crawler(num_workers=2, init=True)
-        crawler.start_crawling(search_query=obj.topic)
 
 class SupplyTypeAdmin(admin.ModelAdmin):
     list_display = ['id', 'type', 'unit', 'active']
@@ -300,3 +308,6 @@ admin_site.register(CompanySetting, CompanySettingAdmin)
 admin_site.register(SupplyType, SupplyTypeAdmin)
 admin_site.register(StockApply, StockApplyAdmin)
 admin_site.register(Storage, StorageAdmin)
+admin_site.register(Location)
+admin_site.register(User)
+admin_site.register(CameraLocation)

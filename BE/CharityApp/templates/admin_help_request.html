@@ -1,5 +1,13 @@
 {% extends "admin/base.html" %}
 
+{% block extrahead %}
+{{ block.super }}
+<link href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" rel="stylesheet"/>
+
+<!-- Thêm Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+{% endblock %}
+
 {% block content %}
     <style>
         body {
@@ -34,7 +42,24 @@
         .btn-submit:hover {
             background-color: #0056b3;
         }
+        #map {
+          height: 650px;
+          width: 100%;
+        }
+        button {
+          margin: 10px;
+          padding: 10px 20px;
+          font-size: 16px;
+          cursor: pointer;
+        }
     </style>
+<h1>Kênh liên lạc khẩn cấp:</h1>
+
+<!-- Nút thay đổi vị trí -->
+
+<button id="changeLocationBtn">Change Location</button> <br/>
+
+<div id="map"></div>
     <div class="container mt-5">
         <div class="form-container">
             <h1 class="text-center mb-4">Help Request Form</h1>
@@ -70,4 +95,26 @@
             </form>
         </div>
     </div>
+<script>
+    var map = L.map('map').setView([{{help_request.latitude}}, {{help_request.longitude}}], 13);  // Vị trí và zoom ban đầu
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    var marker = L.marker([{{help_request.latitude}}, {{help_request.longitude}}]).addTo(map)
+      .bindPopup("Yêu cầu cứu trợ")
+      .openPopup();
+
+    document.getElementById('changeLocationBtn').onclick = function() {
+      var newLat = 48.8566; // Vĩ độ mới
+      var newLon = 2.3522;  // Kinh độ mới (Paris, Pháp)
+
+      marker.setLatLng([newLat, newLon])
+        .bindPopup("New location: Paris")
+        .openPopup();
+
+      map.setView([newLat, newLon], 13);
+    };
+</script>
 {% endblock %}

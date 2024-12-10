@@ -78,7 +78,8 @@ class Crawler:
         if article is None:
             return False
 
-        Article.objects.create(
+
+        a = Article(
             title=article.title,
             brief="\n".join(list(article.description)),
             content="\n".join(list(article.paragraphs)),
@@ -87,6 +88,7 @@ class Crawler:
             created_date=article.date,
             updated_date=article.date,
         )
+        a.save()
 
         # location_status = extract_location_status("\n".join(list(article.paragraphs)))
         #

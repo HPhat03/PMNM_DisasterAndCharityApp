@@ -491,12 +491,16 @@ class HelpRequestViewSet(ViewSet, generics.ListAPIView):
     serializer_class = HelpRequestSerializer
 
     def create(self, request, *args, **kwargs):
-        HelpRequest.objects.create(latitude= request.data['latitude'], longitude=request.data['longitude'])
+        location = Location.objects.filter(location=request.data['location']).first()
+        HelpRequest.objects.create(latitude= request.data['latitude'], longitude=request.data['longitude'], location=location)
         return Response('OK', status = status.HTTP_200_OK)
 
 @api_view(['GET'])
 def crawl_view(request):
-    topic = request.query_params.get('topic', None)
+    cur_setting = CompanySetting.objects.filter(active=True, is_chosen = True).first()
+    if not cur_setting:
+        raise ValidationError({"error": "Missing company setting"})
+    topic = request.query_params.get('topic', cur_setting.topic)
 
     if not topic:
         raise ValidationError({"error": "Missing required parameter: 'topic'"})
@@ -508,8 +512,11 @@ def crawl_view(request):
             {"error": "Request throttled. Try again later.", "retry_after": wait_time},
             status=429,
         )
-
-    crawler = Crawler(num_workers=2)
+    count = Article.objects.all().count()
+    if count == 0:
+        crawler = Crawler(num_workers=2, init=True)
+    else:
+        crawler = Crawler(num_workers=2)
     crawler.start_crawling(search_query=topic)
 
     return Response({"message": f"Crawling started successfully with topic: {topic}"})
