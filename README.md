@@ -88,7 +88,7 @@ The application facilitates rapid information dissemination, enhances connectivi
 
 ## Deployment
 
-...
+Live demo [here](https://app.appsmith.com/app/charityapp/login-674ee6995a292b5c3be9fb35)
 
 ## Project Structure
 
