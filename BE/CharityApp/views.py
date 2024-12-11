@@ -46,6 +46,9 @@ LIMIT_REPORT_DAY = 10
 LIMIT_APPROVAL = 3
 
 class InitView(View):
+    u = User.objects.filter(username='admin').first()
+    ad = Admin(user_info=u)
+    ad.save()
     def get(self, request):
         context = {}
         return render(request, "offline.html", context)
@@ -429,15 +432,15 @@ class SupplyTypeViewSet(ViewSet, generics.ListAPIView):
     serializer_class = SupplyTypeSerializer
     # permission_classes = [IsAuthenticated]
 
-class LocationViewSet(ViewSet, generics.ListAPIView):
-    queryset = Location.objects.filter(active=True).order_by("location")
-    serializer_class = LocationSerializer
-    # permission_classes = [IsAuthenticated]
-
-    @action(methods = ["GET"], detail= False)
-    def in_need(self, request):
-        qs = Location.objects.filter(active=True).exclude(status=LocationState.NORMAL)
-        return Response(LocationSerializer(qs, context={"request": request}).data, status = status.HTTP_200_OK)
+# class LocationViewSet(ViewSet, generics.ListAPIView):
+#     queryset = Location.objects.filter(active=True).order_by("location")
+#     serializer_class = LocationSerializer
+#     # permission_classes = [IsAuthenticated]
+#
+#     @action(methods = ["GET"], detail= False)
+#     def in_need(self, request):
+#         qs = Location.objects.filter(active=True).exclude(status=LocationState.NORMAL)
+#         return Response(LocationSerializer(qs, context={"request": request}).data, status = status.HTTP_200_OK)
 
 class SettingViewSet(ViewSet, generics.ListAPIView):
     queryset = CompanySetting.objects.filter(active=True, is_chosen=True).first()
@@ -473,18 +476,22 @@ class ChatViewSet(ViewSet, generics.ListAPIView):
 class LocationViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
-    def get_permissions(self):
-        return [IsAuthenticated()]
+    # def get_permissions(self):
+    #     return [IsAuthenticated()]
 
     def list(self, request, *args, **kwargs):
         res = "Not OK"
         name = request.query_params.get('location')
-        print(name)
-        qs = Location.objects.filter(location=name).first()
-        print(qs)
-        if qs is not None:
-            res = self.serializer_class(qs, context={"request": request}).data
-        return Response(res, status=status.HTTP_200_OK)
+        if name is None:
+            qs = Location.objects.all()
+            return Response(self.serializer_class(qs, many=True, context={"request": request}).data, status=status.HTTP_200_OK)
+        else:
+            print(name)
+            qs = Location.objects.filter(location=name).first()
+            print(qs)
+            if qs is not None:
+                res = self.serializer_class(qs, context={"request": request}).data
+            return Response(res, status=status.HTTP_200_OK)
 
 class HelpRequestViewSet(ViewSet, generics.ListAPIView):
     queryset = HelpRequest.objects.all()
@@ -495,6 +502,19 @@ class HelpRequestViewSet(ViewSet, generics.ListAPIView):
         HelpRequest.objects.create(latitude= request.data['latitude'], longitude=request.data['longitude'], location=location)
         return Response('OK', status = status.HTTP_200_OK)
 
+    @action(["GET"], detail=True)
+    def approve(self, request, pk=None):
+        req = HelpRequest.objects.filter(pk=pk).first()
+        req.is_helping = True
+        req.save()
+        return Response("OK", status=status.HTTP_200_OK)
+
+    @action(["GET"], detail=True)
+    def close(self, request, pk=None):
+        req = HelpRequest.objects.filter(pk=pk).first()
+        req.active = False
+        req.save()
+        return Response("OK", status=status.HTTP_200_OK)
 @api_view(['GET'])
 def crawl_view(request):
     cur_setting = CompanySetting.objects.filter(active=True, is_chosen = True).first()

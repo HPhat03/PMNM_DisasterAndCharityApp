@@ -83,7 +83,7 @@ TEMPLATES = [
 # ]
 CORS_ALLOW_ALL_ORIGINS = True
 WSGI_APPLICATION = 'CharityProject.wsgi.application'
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'ce17-27-64-63-2.ngrok-free.app', 'pmnm.quythanh.tk']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'c059-27-3-78-86.ngrok-free.app', 'pmnm.quythanh.tk']
 CSRF_TRUSTED_ORIGINS = ["https://pmnm.quythanh.tk"]
 
 # Database

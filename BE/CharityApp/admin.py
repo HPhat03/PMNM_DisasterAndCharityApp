@@ -104,7 +104,6 @@ def HelpRequestPage(request):
         "setting": setting,
         "cameras": cameras_info
     }
-    print(cameras_info)
     return render(request, 'admin_help_request.html', context)
 
 def CampaignWarningPage(request):

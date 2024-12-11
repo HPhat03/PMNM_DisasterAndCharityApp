@@ -74,7 +74,7 @@
     </style>
 <h1>Kênh liên lạc khẩn cấp:</h1>
 
-<button onclick="toggleCamera()">Tiếp nhận hỗ trợ</button>
+<button onclick="approve()">Tiếp nhận hỗ trợ</button>
 <div id="map"></div>
 <div>
     <button id="openCamera" onclick="toggleCamera()">Xem danh sách Camera</button>
@@ -138,7 +138,7 @@
                         <input type="text" class="form-control" id="victim_place" name="victim_place" placeholder="Enter location" maxlength="225"value="{{help_request.location.location}}" disabled>
                     </div>
                     <div class="text-center">
-                        <button type="submit" class="btn btn-submit">Đóng cứu trợ</button>
+                        <button onclick="close()" class="btn btn-submit">Đóng cứu trợ</button>
                     </div>
                 </form>
             </div>
@@ -155,7 +155,8 @@
 </div>
 
 <script>
-    let is_closed =
+    let is_helping = false;
+    let is_closed = false;
     var map = L.map('map').setView([{{help_request.latitude}}, {{help_request.longitude}}], 19);  // Vị trí và zoom ban đầu
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -206,9 +207,19 @@
             })
 
     }
+    function approve() {
 
+        fetch('{{setting.deploy_path}}/help_request/{{help_request.id}}/approve/').then(res => res.json()).then(data => console.log(data))
+    }
+    function close() {
+        fetch('{{setting.deploy_path}}/help_request/{{help_request.id}}/close/').then(() => is_closed=true)
+    }
     window.addEventListener('beforeunload', function (e) {
-
-});
+        if(is_helping && !is_closed)
+        {
+            event.preventDefault();
+            alert("Chuyển trang đã bị khóa!");
+        }
+    });
 </script>
 {% endblock %}
