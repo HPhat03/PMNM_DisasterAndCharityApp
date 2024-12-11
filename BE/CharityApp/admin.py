@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.urls import path
 from django.shortcuts import render
+from geopy.distance import geodesic
 from pycparser.c_ast import Return
 
 from .models import *
@@ -78,12 +79,32 @@ def StorageFollowUpDetailPage(request, id=None):
     }
     return render(request, 'admin_storage_detail_follow_up.html', context)
 
+
 def HelpRequestPage(request):
     currentRequest = HelpRequest.objects.filter(active=True,is_helping=False).first()
-    print(currentRequest)
+
+    cameras = CameraLocation.objects.filter(active=True, location=currentRequest.location).all()
+
+    setting = CompanySetting.objects.filter(is_chosen=True).first()
+    main_coord = (currentRequest.latitude, currentRequest.longitude)
+    cameras_info = []
+    for cam in cameras:
+        cam_coord = (cam.latitude, cam.longitude)
+        d = geodesic(main_coord, cam_coord).kilometers
+        if d <= 5:
+            cameras_info.append({
+                "camera": cam,
+                "distance": round(d*1000, 2)
+            })
+
+    cameras_info.sort(key=lambda e : e["distance"])
+
     context = {
-        "help_request": currentRequest
+        "help_request": currentRequest,
+        "setting": setting,
+        "cameras": cameras_info
     }
+    print(cameras_info)
     return render(request, 'admin_help_request.html', context)
 
 def CampaignWarningPage(request):

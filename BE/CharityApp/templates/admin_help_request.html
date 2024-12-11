@@ -43,78 +43,167 @@
             background-color: #0056b3;
         }
         #map {
+          margin-top: 30px;
           height: 650px;
           width: 100%;
         }
         button {
-          margin: 10px;
+          margin: 10px 0px;
           padding: 10px 20px;
           font-size: 16px;
           cursor: pointer;
         }
+        .hidden {
+            display: none
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 50px;
+          }
+
+          th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+          }
+
+          th {
+            background-color: #f2f2f2;
+          }
     </style>
 <h1>Kênh liên lạc khẩn cấp:</h1>
 
-<!-- Nút thay đổi vị trí -->
-
-<button id="changeLocationBtn">Change Location</button> <br/>
 
 <div id="map"></div>
-    <div class="container mt-5">
-        <div class="form-container">
-            <h1 class="text-center mb-4">Help Request Form</h1>
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="latitude" class="form-label">Latitude</label>
-                    <input type="number" step="0.000001" class="form-control" id="latitude" name="latitude" placeholder="Enter latitude" required>
-                </div>
-                <div class="mb-3">
-                    <label for="longitude" class="form-label">Longitude</label>
-                    <input type="number" step="0.000001" class="form-control" id="longitude" name="longitude" placeholder="Enter longitude" required>
-                </div>
-                <div class="mb-3">
-                    <label for="victim_name" class="form-label">Victim Name</label>
-                    <input type="text" class="form-control" id="victim_name" name="victim_name" placeholder="Enter victim's name" maxlength="50" required>
-                </div>
-                <div class="mb-3">
-                    <label for="victim_problem" class="form-label">Victim Problem</label>
-                    <input type="text" class="form-control" id="victim_problem" name="victim_problem" placeholder="Describe the problem" maxlength="100" required>
-                </div>
-                <div class="mb-3">
-                    <label for="victim_solution" class="form-label">Proposed Solution</label>
-                    <textarea class="form-control" id="victim_solution" name="victim_solution" rows="3" placeholder="Suggest a solution"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="victim_place" class="form-label">Victim Place</label>
-                    <input type="text" class="form-control" id="victim_place" name="victim_place" placeholder="Enter location" maxlength="225" required>
-                </div>
-                <div class="text-center">
-                    <button type="submit" class="btn btn-submit">Submit Request</button>
-                </div>
-            </form>
+<div>
+    <button id="openCamera" onclick="toggleCamera()">Xem danh sách Camera</button>
+<table id="cameraTable" class="hidden">
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Mã Camera</th>
+        <th>Vị trí</th>
+        <th>Tọa độ</th>
+        <th>Khoảng cách nơi cứu hộ</th>
+        <th></th> <!-- Cột mới cho nút bấm -->
+    </tr>
+    </thead>
+    <tbody>
+    {% for x in cameras %}
+    <tr>
+        <td>{{x.camera.id}}</td>
+        <td>{{x.camera.camera_code}}</td>
+        <td>{{x.camera.location.location}}</td>
+        <td>({{x.camera.latitude}}, {{x.camera.longitude}})</td>
+        <td>{{x.distance}} m</td>
+        <td>
+            <button onclick="#">Truy Xuất</button>
+        </td> <!-- Nút bấm -->
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+    <div class="container mt-5" style="width: 300%;">
+            <div class="form-container" >
+                <h1 class="text-center mb-4">Báo cáo cứu hộ</h1>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="latitude" class="form-label">Vĩ độ</label>
+                        <input type="number" step="0.000001" class="form-control" id="id" name="latitude" value="{{help_request.id}}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="latitude" class="form-label">Vĩ độ</label>
+                        <input type="number" step="0.000001" class="form-control" id="latitude" name="latitude" placeholder="Enter latitude" value="{{help_request.latitude}}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="longitude" class="form-label">Kinh độ</label>
+                        <input type="number" step="0.000001" class="form-control" id="longitude" name="longitude" placeholder="Enter longitude" value="{{help_request.longitude}}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="victim_name" class="form-label">Tên người bị nạn</label>
+                        <input type="text" class="form-control" id="victim_name" name="victim_name" placeholder="Enter victim's name" maxlength="50" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="victim_problem" class="form-label">Vấn đề</label>
+                        <input type="text" class="form-control" id="victim_problem" name="victim_problem" placeholder="Describe the problem" maxlength="100" required onfocusout="AISolution()">
+                    </div>
+                    <div class="mb-3">
+                        <label for="victim_solution" class="form-label">Giải pháp</label>
+                        <textarea class="form-control" id="victim_solution" name="victim_solution" rows="3" placeholder="Suggest a solution"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="victim_place" class="form-label">Vị trí</label>
+                        <input type="text" class="form-control" id="victim_place" name="victim_place" placeholder="Enter location" maxlength="225"value="{{help_request.location.location}}" disabled>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-submit">Đóng cứu trợ</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
+        <div class="container mt-5" style="width: 300%;">
+            <div class="form-container" style="width: 200%;">
+                <h2 class="text-center mb-4">Các đề xuất biện pháp</h2>
+                <div id="solution">
+
+                </div>
+            </div>
+        </div>
+
+</div>
+
 <script>
-    var map = L.map('map').setView([{{help_request.latitude}}, {{help_request.longitude}}], 13);  // Vị trí và zoom ban đầu
+    var map = L.map('map').setView([{{help_request.latitude}}, {{help_request.longitude}}], 19);  // Vị trí và zoom ban đầu
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
     var marker = L.marker([{{help_request.latitude}}, {{help_request.longitude}}]).addTo(map)
-      .bindPopup("Yêu cầu cứu trợ")
+      .bindPopup("Yêu cầu cứu trợ từ tọa độ ({{help_request.latitude}},{{help_request.longitude}})")
       .openPopup();
 
-    document.getElementById('changeLocationBtn').onclick = function() {
-      var newLat = 48.8566; // Vĩ độ mới
-      var newLon = 2.3522;  // Kinh độ mới (Paris, Pháp)
+    var cameraMarker = L.divIcon({
+    className: 'custom-icon',
+    html: `<img  src="https://cdn-icons-png.flaticon.com/512/4017/4017956.png" style="border-radius: 50%; width: 20px; height: 20px;"/>`,
+    iconSize: [10, 10],
+    iconAnchor: [10, 10],  // Position the anchor of the marker at the center
+  });
 
-      marker.setLatLng([newLat, newLon])
-        .bindPopup("New location: Paris")
-        .openPopup();
+    let marker1
+    {% for x in cameras %}
+    marker1 = L.marker([{{x.camera.latitude}}, {{x.camera.longitude}}],{icon: cameraMarker}).addTo(map)
+      .bindPopup("{{x.camera.camera_code}} ({{x.camera.latitude}}, {{x.camera.longitude}})")
+    {% endfor %}
 
-      map.setView([newLat, newLon], 13);
-    };
+    function toggleCamera() {
+        document.getElementById("cameraTable").classList.toggle("hidden")
+    }
+
+    function AISolution() {
+        key = document.getElementById("victim_problem").value
+        userMessage = `Gợi ý các đề xuất, giải pháp cứu hộ cho vấn đề ${key}, đánh theo mục chỉ số 1,2,3; xuống hàng thì thay \n bằng <br/>`
+        const apiMessages = [{ "role": "user", "content": userMessage }];
+        let requestBody = {
+            "model": "gpt-4o",
+            "messages": apiMessages
+        };
+        fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer {{setting.openai_key}}",
+                },
+                body: JSON.stringify(requestBody),
+            }).then(res => res.json()).then(data => {
+                console.log(data)
+                if(data.choices.length > 0){
+                    document.getElementById("solution").innerHTML = data.choices[0].message.content;
+                }
+            })
+
+    }
 </script>
 {% endblock %}

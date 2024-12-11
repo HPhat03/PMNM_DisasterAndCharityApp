@@ -23,3 +23,39 @@
   }
 </script>
 </html>
+
+<div class="container mt-5">
+        <div class="form-container">
+            <h1 class="text-center mb-4">Help Request Form</h1>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="latitude" class="form-label">Latitude</label>
+                    <input type="number" step="0.000001" class="form-control" id="latitude" name="latitude" placeholder="Enter latitude" required>
+                </div>
+                <div class="mb-3">
+                    <label for="longitude" class="form-label">Longitude</label>
+                    <input type="number" step="0.000001" class="form-control" id="longitude" name="longitude" placeholder="Enter longitude" required>
+                </div>
+                <div class="mb-3">
+                    <label for="victim_name" class="form-label">Victim Name</label>
+                    <input type="text" class="form-control" id="victim_name" name="victim_name" placeholder="Enter victim's name" maxlength="50" required>
+                </div>
+                <div class="mb-3">
+                    <label for="victim_problem" class="form-label">Victim Problem</label>
+                    <input type="text" class="form-control" id="victim_problem" name="victim_problem" placeholder="Describe the problem" maxlength="100" required>
+                </div>
+                <div class="mb-3">
+                    <label for="victim_solution" class="form-label">Proposed Solution</label>
+                    <textarea class="form-control" id="victim_solution" name="victim_solution" rows="3" placeholder="Suggest a solution"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="victim_place" class="form-label">Victim Place</label>
+                    <input type="text" class="form-control" id="victim_place" name="victim_place" placeholder="Enter location" maxlength="225" required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-submit">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>

@@ -27,7 +27,7 @@ from .models import (
     ContentPicture, DetailDonationReport, Donation, DonationCampaign, DonationPost,
     DonationPostApproval, DonationPostHistory, DonationPostPicture, DonationReport,
     DonationReportPicture, Location, LocationState, PaymentForm, SupplyType, User,
-    UserRole, HelpRequest
+    UserRole, HelpRequest, CameraLocation
 )
 from .news_crawler.crawler import Crawler
 from .permissions import IsCharityOrg
@@ -828,3 +828,16 @@ def refund(request):
         response_json = {"error": f"Request failed with status code: {response.status_code}"}
 
     return render(request, "payment/refund.html", {"title": "Kết quả hoàn tiền giao dịch", "response_json": response_json})
+
+def random_camera(request):
+    lat = float(request.GET.get('lat'))
+    long = float(request.GET.get('long'))
+
+    radius = 0.001
+    n = 18
+    for i in range(10,n):
+        # Generate random latitude and longitude variations within the specified radius
+        random_lat = lat + random.uniform(-radius, radius)
+        random_lon = long + random.uniform(-radius, radius)
+        CameraLocation.objects.create(camera_code=f"CAM_HN_{i}", latitude=random_lat, longitude=random_lon, location= Location.objects.filter(pk=4).first())
+    return "OK"
