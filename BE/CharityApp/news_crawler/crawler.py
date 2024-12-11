@@ -90,13 +90,13 @@ class Crawler:
         )
         a.save()
 
-        # location_status = extract_location_status("\n".join(list(article.paragraphs)))
-        #
-        # for location in location_status:
-        #     Location.objects.create(
-        #         location=location["city"],
-        #         current_status=location["status"]
-        #     )
+        location_status = extract_location_status("\n".join(list(article.paragraphs)))
+
+        for location in location_status:
+            Location.objects.create(
+                location=location["city"],
+                current_status=location["status"]
+            )
 
         return True
 

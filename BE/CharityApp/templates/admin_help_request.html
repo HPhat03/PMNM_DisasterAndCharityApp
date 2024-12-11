@@ -74,7 +74,7 @@
     </style>
 <h1>Kênh liên lạc khẩn cấp:</h1>
 
-
+<button onclick="toggleCamera()">Tiếp nhận hỗ trợ</button>
 <div id="map"></div>
 <div>
     <button id="openCamera" onclick="toggleCamera()">Xem danh sách Camera</button>
@@ -155,6 +155,7 @@
 </div>
 
 <script>
+    let is_closed =
     var map = L.map('map').setView([{{help_request.latitude}}, {{help_request.longitude}}], 19);  // Vị trí và zoom ban đầu
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -205,5 +206,9 @@
             })
 
     }
+
+    window.addEventListener('beforeunload', function (e) {
+
+});
 </script>
 {% endblock %}
