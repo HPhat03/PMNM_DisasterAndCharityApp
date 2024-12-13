@@ -1,12 +1,28 @@
-from dataclasses import fields
-
-from pyasn1_modules.rfc2560 import TBSRequest
-from rest_framework.serializers import ModelSerializer
-from rest_framework import serializers
-from .models import *
+# Copyright 2024 The Antibug
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from django.db import transaction
+from rest_framework import serializers
 
-#Dynamid
+from .enums import UserRole
+from .models import (
+    Article, CampaignLocation, CharityOrg, Chat, Civilian, CompanySetting,
+    ContentPicture, DetailDonationReport, Donation, DonationCampaign,
+    DonationPost, DonationPostPicture, DonationReport, DonationReportPicture,
+    HelpRequest, Location, SupplyType, User
+)
+
+
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     """
     A ModelSerializer that takes an additional `fields` argument that
@@ -28,7 +44,6 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                 self.fields.pop(field_name)
 
 
-#Custom
 class UserSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = User
@@ -38,10 +53,10 @@ class UserSerializer(DynamicFieldsModelSerializer):
     def create(self, validated_data):
         with transaction.atomic():
             other = {}
-            if('civilian_id' in validated_data.keys()):
+            if 'civilian_id' in validated_data.keys():
                 other['civilian_id'] = validated_data.pop('civilian_id')
 
-            if('civilian_id_date' in validated_data.keys()):
+            if 'civilian_id_date' in validated_data.keys():
                 other['civilian_id_date'] = validated_data.pop('civilian_id_date')
 
             user = User(**validated_data)
@@ -58,11 +73,13 @@ class UserSerializer(DynamicFieldsModelSerializer):
             return user
         return None
 
+
 class CivilianFromUserSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Civilian
         # fields = "__all__"
         exclude = ('user_info',)
+
 
 class CharityOrgFromUserSerializer(DynamicFieldsModelSerializer):
     class Meta:
@@ -70,39 +87,54 @@ class CharityOrgFromUserSerializer(DynamicFieldsModelSerializer):
         # fields = "__all__"
         exclude = ('user_info',)
 
+
 class CivilianSerializer(DynamicFieldsModelSerializer):
     user_info = UserSerializer(fields=['id', 'username', 'first_name', 'last_name', 'bank', 'bank_id', 'address'])
+
     class Meta:
         model = Civilian
         fields = "__all__"
+
+
 class CharityOrgSerializer(DynamicFieldsModelSerializer):
     user_info = UserSerializer(fields=['id','username', 'first_name'])
+
     class Meta:
         model = CharityOrg
         fields = "__all__"
+
+
 class ContentPictureSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = ContentPicture
         fields = "__all__"
+
+
 class SupplyTypeSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = SupplyType
         fields = "__all__"
+
 
 class LocationSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Location
         fields = "__all__"
 
+
 class CampaignLocationDynamidSerializer(DynamicFieldsModelSerializer):
     location = LocationSerializer(fields=['location'])
+
     class Meta:
         model = CampaignLocation
         fields = "__all__"
+
+
 class ArticleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Article
         fields = "__all__"
+
 
 class CampagnSerializer(DynamicFieldsModelSerializer):
     org = CharityOrgSerializer()
@@ -110,64 +142,89 @@ class CampagnSerializer(DynamicFieldsModelSerializer):
     supply_type = SupplyTypeSerializer(fields=['type', 'unit'])
     locations = CampaignLocationDynamidSerializer(many=True, fields=['id','location', 'expected_fund', 'current_fund'])
     enclosed_article = ArticleSerializer(many=True)
+
     class Meta:
         model = DonationCampaign
         fields = "__all__"
+
 
 class CampaignLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignLocation
         fields = ['id', 'campaign', 'location', 'expected_fund', 'current_fund']
 
+
 class ReportSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = DonationReport
         fields = "__all__"
+
+
 class DonationPostPictureSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = DonationPostPicture
         fields = "__all__"
 
+
 class PostSerializer(DynamicFieldsModelSerializer):
     civilian = CivilianSerializer()
     pictures = DonationPostPictureSerializer(many=True, fields=['picture'])
+
     class Meta:
         model = DonationPost
         fields = "__all__"
+
+
 class ArticleSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Article
         fields = "__all__"
+
+
 class ChatSerializer(DynamicFieldsModelSerializer):
     civilian = CivilianSerializer()
+
     class Meta:
         model = Chat
         fields = "__all__"
+
+
 class CompanySettingSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = CompanySetting
         fields = "__all__"
+
+
 class DonationSerializer(DynamicFieldsModelSerializer):
     civilian = CivilianSerializer()
     campaign =  CampaignLocationDynamidSerializer(fields=['id','location'])
+
     class Meta:
         model = Donation
         fields = "__all__"
+
 
 class DonationReportPictureSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = DonationReportPicture
         fields = "__all__"
+
+
 class DonationReportDetailSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = DetailDonationReport
         fields = "__all__"
+
+
 class CampaignReportSerializer(DynamicFieldsModelSerializer):
     pictures = DonationReportPictureSerializer(fields= ['path'], many=True)
     details = DonationReportDetailSerializer(fields= ['id','paid_for', 'paid'], many=True)
+
     class Meta:
         model = DonationReport
         fields = "__all__"
+
+
 class HelpRequestSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = HelpRequest

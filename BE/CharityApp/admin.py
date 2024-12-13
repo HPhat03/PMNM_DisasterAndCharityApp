@@ -1,27 +1,42 @@
-from lib2to3.fixes.fix_input import context
-from tkinter.font import names
-
+# Copyright 2024 The Antibug
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from django.contrib import admin, messages
-from django.core.files.storage import storages
 from django.db import transaction
 from django.db.models import Sum
-from django.urls import path
 from django.shortcuts import render
+from django.urls import path
 from geopy.distance import geodesic
-from pycparser.c_ast import Return
 
-from .models import *
-from .news_crawler.crawler import Crawler
-
+from .enums import WayType
+from .models import (
+    Admin, Approval, Article, CameraLocation, CampaignLocation, CompanySetting,
+    DonationCampaign, DonationPost, DonationReport, HelpRequest, Location,
+    SettingForm, Stock, StockApply, Storage, SupplyType, User
+)
 
 # Register your models here.
-
 def ApprovalPage(request):
-    registeries = DonationCampaign.objects.filter(is_permitted=False, approval__admin_id=request.user.id, approval__is_approved=None)
+    registeries = DonationCampaign.objects.filter(
+        is_permitted=False,
+        approval__admin_id=request.user.id,
+        approval__is_approved=None
+    )
     context = {
         "registeries" : registeries
     }
     return render(request, 'admin_approval.html', context)
+
 
 def DetailApprovalePage(request, id = None):
     detail = DonationCampaign.objects.filter(pk=id).first()
@@ -34,12 +49,15 @@ def DetailApprovalePage(request, id = None):
     }
     return render(request, 'admin_detail_approval.html', context)
 
+
 def ApprovalReportPage(request):
     reports = DonationReport.objects.filter(active=True,confimation=None)
     context = {
         "reports" : reports
     }
     return render(request, 'admin_report_approval.html', context)
+
+
 def DetailApprovalReportPage(request, id = None):
     report = DonationReport.objects.filter(pk=id).first()
     context = {
@@ -48,12 +66,14 @@ def DetailApprovalReportPage(request, id = None):
     }
     return render(request, 'admin_detail_report_approval.html', context)
 
+
 def ApprovalPostPage(request):
     posts = DonationPost.objects.filter(donationpostapproval=None)
     context = {
         "posts" : posts
     }
     return render(request, 'admin_post_approval.html', context)
+
 
 def DetailPostApprovalePage(request, id = None):
     detail = DonationPost.objects.filter(pk=id).first()
@@ -63,12 +83,14 @@ def DetailPostApprovalePage(request, id = None):
     }
     return render(request, 'admin_detail_post_approval.html', context)
 
+
 def StorageFollowUpPage(request):
     storages = Storage.objects.filter(active=True)
     context = {
         "storages": storages
     }
     return render(request, 'admin_storage_follow_up.html', context)
+
 
 def StorageFollowUpDetailPage(request, id=None):
     storages = Storage.objects.filter(active=True)
@@ -106,6 +128,7 @@ def HelpRequestPage(request):
     }
     return render(request, 'admin_help_request.html', context)
 
+
 def CampaignWarningPage(request):
     lates = DonationReport.objects.filter(active=True).exclude(confimation=None).all()
     lates = list(lates)
@@ -124,6 +147,8 @@ def CampaignWarningPage(request):
     }
     print(unreports)
     return render(request, 'admin_campaign_warning.html', context)
+
+
 class MyAdminPage(admin.AdminSite):
     site_header = "THE ANTIBUG ADMIN"
     change_list_template = 'admin_approval.html'
@@ -236,6 +261,8 @@ class MyAdminPage(admin.AdminSite):
             ]
         })
         return app_list
+
+
 class CampaignAdmin(admin.ModelAdmin):
     list_display = ['id', 'org', 'title', 'is_permitted']
 
@@ -248,6 +275,7 @@ class CampaignAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+
 class CompanySettingAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'topic', 'is_chosen']
     form = SettingForm
@@ -257,12 +285,12 @@ class CompanySettingAdmin(admin.ModelAdmin):
         with transaction.atomic():
             count = CompanySetting.objects.filter(active=True, is_chosen = True).first()
             if obj.is_chosen:
-                if count != None:
+                if count is not None:
                     CompanySetting.objects.filter(active=True, is_chosen = True).update(is_chosen=False)
                 if count.id != obj.id or (count.id == obj.id and count.topic != obj.topic):
                     Article.objects.all().delete()
             else:
-                if count == None:
+                if count is None:
                     obj.is_chosen = True
                     Article.objects.all().delete()
             super().save_model(request, obj, form, change)
@@ -270,6 +298,8 @@ class CompanySettingAdmin(admin.ModelAdmin):
 
 class SupplyTypeAdmin(admin.ModelAdmin):
     list_display = ['id', 'type', 'unit', 'active']
+
+
 class StockApplyAdmin(admin.ModelAdmin):
     list_display = ['id', 'way','type', 'campaign', 'location']
     list_filter = ('way','location', 'campaign')
@@ -296,7 +326,7 @@ class StockApplyAdmin(admin.ModelAdmin):
             cplc.save()
         elif obj.way == WayType.EXPORT:
             if stock is None:
-                msg = f'Không có sẵn hàng để xuất'
+                msg = 'Không có sẵn hàng để xuất'
                 messages.add_message(request, level=messages.ERROR, message=msg)
                 return
             else:
@@ -322,6 +352,8 @@ class StorageAdmin(admin.ModelAdmin):
     list_display = ['id', 'address', 'location']
     list_filter = ('location',)
     search_fields = ('address', 'location')
+
+
 admin_site = MyAdminPage(name="admin_site")
 admin_site.register(DonationCampaign, CampaignAdmin)
 admin_site.register(CompanySetting, CompanySettingAdmin)

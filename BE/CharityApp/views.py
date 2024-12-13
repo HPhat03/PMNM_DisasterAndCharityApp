@@ -1,3 +1,16 @@
+# Copyright 2024 The Antibug
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import hashlib
 import hmac
 import json
@@ -17,25 +30,29 @@ from rest_framework import status
 from rest_framework import parsers
 from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import ValidationError
-from rest_framework.parsers import MultiPartParser, FileUploadParser, JSONParser
+from rest_framework.parsers import (
+    MultiPartParser, FileUploadParser, JSONParser
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet, generics
 
 from .models import (
-    Admin, Approval, Article, CampaignLocation, Chat, CompanySetting, Confimation,
-    ContentPicture, DetailDonationReport, Donation, DonationCampaign, DonationPost,
-    DonationPostApproval, DonationPostHistory, DonationPostPicture, DonationReport,
-    DonationReportPicture, Location, LocationState, PaymentForm, SupplyType, User,
-    UserRole, HelpRequest, CameraLocation
+    Admin, Approval, Article, CampaignLocation, Chat, CompanySetting,
+    Confimation, ContentPicture, DetailDonationReport, Donation,
+    DonationCampaign, DonationPost, DonationPostApproval, DonationPostHistory,
+    DonationPostPicture, DonationReport, DonationReportPicture, Location,
+    PaymentForm, SupplyType, User, UserRole, HelpRequest,
+    CameraLocation
 )
 from .news_crawler.crawler import Crawler
 from .permissions import IsCharityOrg
 from .serializers import (
-    ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer, ChatSerializer,
-    CivilianFromUserSerializer, CompanySettingSerializer, LocationSerializer,
-    PostSerializer, ReportSerializer, SupplyTypeSerializer, UserSerializer, DonationSerializer,
-    CampaignReportSerializer, HelpRequestSerializer
+    ArticleSerializer, CampagnSerializer, CharityOrgFromUserSerializer,
+    ChatSerializer, CivilianFromUserSerializer, CompanySettingSerializer,
+    LocationSerializer, PostSerializer, ReportSerializer, SupplyTypeSerializer,
+    UserSerializer, DonationSerializer, CampaignReportSerializer,
+    HelpRequestSerializer
 )
 from .throttle import OncePerThirtyMinutesThrottle
 from .vnpay import vnpay
@@ -49,9 +66,12 @@ class InitView(View):
     u = User.objects.filter(username='admin').first()
     ad = Admin(user_info=u)
     ad.save()
+
     def get(self, request):
         context = {}
         return render(request, "offline.html", context)
+
+
 def chat(request):
     userS = request.GET.get("user_send")
     userR = request.GET.get("user_receive")
@@ -75,6 +95,7 @@ def chat(request):
         "user_receive": userR
     }
     return render(request, "chat.html", context)
+
 
 class UserViewSet(ViewSet):
     queryset = User.objects.all()
@@ -104,6 +125,7 @@ class UserViewSet(ViewSet):
             obj = CharityOrgFromUserSerializer(queryset, context={'request': request})
         data['further_info'] = obj.data
         return Response(data, status=status.HTTP_200_OK)
+
 
 class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
     queryset = DonationCampaign.objects.filter(active=True, is_permitted = True).order_by("-created_date")
@@ -303,6 +325,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
                 recipient_list=[campagn.org.user_info.email]
             )
         return Response("OK", status=status.HTTP_200_OK)
+
     @transaction.atomic()
     @action(methods = ['POST'], detail = True)
     def cancel(self, request, pk=None):
@@ -368,6 +391,7 @@ class DonationCampaignViewSet(ViewSet, generics.ListAPIView, generics.RetrieveAP
         res = CampaignReportSerializer(campagn, context={"request": request}).data
         return Response(res, status=status.HTTP_200_OK)
 
+
 class DonationReportViewSet(ViewSet, generics.ListAPIView):
     queryset = DonationReport.objects.filter(active=True)
     serializer_class = ReportSerializer
@@ -384,6 +408,7 @@ class DonationReportViewSet(ViewSet, generics.ListAPIView):
         approval = Confimation(admin_id=request.user.id, report = report)
         approval.save()
         return Response(self.serializer_class(approval, context = {"request": request}), status=status.HTTP_200_OK)
+
 
 class DonationPostViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = DonationPost.objects.filter(active=True).exclude(donationpostapproval=None).order_by("-created_date")
@@ -427,10 +452,12 @@ class DonationPostViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView)
         approval.save()
         return Response("OK", status=status.HTTP_200_OK)
 
+
 class SupplyTypeViewSet(ViewSet, generics.ListAPIView):
     queryset =  SupplyType.objects.filter(active=True)
     serializer_class = SupplyTypeSerializer
     # permission_classes = [IsAuthenticated]
+
 
 # class LocationViewSet(ViewSet, generics.ListAPIView):
 #     queryset = Location.objects.filter(active=True).order_by("location")
@@ -441,6 +468,7 @@ class SupplyTypeViewSet(ViewSet, generics.ListAPIView):
 #     def in_need(self, request):
 #         qs = Location.objects.filter(active=True).exclude(status=LocationState.NORMAL)
 #         return Response(LocationSerializer(qs, context={"request": request}).data, status = status.HTTP_200_OK)
+
 
 class SettingViewSet(ViewSet, generics.ListAPIView):
     queryset = CompanySetting.objects.filter(active=True, is_chosen=True).first()
@@ -453,11 +481,13 @@ class SettingViewSet(ViewSet, generics.ListAPIView):
             res = self.serializer_class(queryset, context = {'request': request}).data
         return Response(res,status=status.HTTP_200_OK)
 
+
 class ArticleViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     def get_permissions(self):
         return [AllowAny()]
+
 
 class ChatViewSet(ViewSet, generics.ListAPIView):
     queryset = Chat.objects.all()
@@ -472,6 +502,7 @@ class ChatViewSet(ViewSet, generics.ListAPIView):
         if len(qs) != 0:
             res = self.serializer_class(qs, many=True, context = {"request": request}).data
         return Response(res, status=status.HTTP_200_OK)
+
 
 class LocationViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
     queryset = Location.objects.all()
@@ -492,6 +523,7 @@ class LocationViewSet(ViewSet, generics.ListAPIView, generics.CreateAPIView):
             if qs is not None:
                 res = self.serializer_class(qs, context={"request": request}).data
             return Response(res, status=status.HTTP_200_OK)
+
 
 class HelpRequestViewSet(ViewSet, generics.ListAPIView):
     queryset = HelpRequest.objects.all()
@@ -515,6 +547,8 @@ class HelpRequestViewSet(ViewSet, generics.ListAPIView):
         req.active = False
         req.save()
         return Response("OK", status=status.HTTP_200_OK)
+
+
 @api_view(['GET'])
 def crawl_view(request):
     cur_setting = CompanySetting.objects.filter(active=True, is_chosen = True).first()
@@ -561,6 +595,7 @@ def init_article_view(request):
 def index(request):
     return render(request, "payment/index.html", {"title": "Danh sách demo"})
 
+
 def hmacsha512(key, data):
     byteKey = key.encode('utf-8')
     byteData = data.encode('utf-8')
@@ -570,43 +605,45 @@ def hmacsha512(key, data):
 def payment(request):
 
     if request.method == 'POST':
-        # Process input data and build url payment
         form = PaymentForm(request.POST)
-        if form.is_valid():
-            order_type = form.cleaned_data['order_type']
-            order_id = form.cleaned_data['order_id']
-            amount = form.cleaned_data['amount']
-            order_desc = form.cleaned_data['order_desc']
-            bank_code = form.cleaned_data['bank_code']
-            language = form.cleaned_data['language']
-            ipaddr = get_client_ip(request)
-            # Build URL Payment
-            vnp = vnpay()
-            vnp.requestData['vnp_Version'] = '2.1.0'
-            vnp.requestData['vnp_Command'] = 'pay'
-            vnp.requestData['vnp_TmnCode'] = settings.VNPAY_TMN_CODE
-            vnp.requestData['vnp_Amount'] = amount * 100
-            vnp.requestData['vnp_CurrCode'] = 'VND'
-            vnp.requestData['vnp_TxnRef'] = order_id
-            vnp.requestData['vnp_OrderInfo'] = order_desc
-            vnp.requestData['vnp_OrderType'] = order_type
-            # Check language, default: vn
-            if language and language != '':
-                vnp.requestData['vnp_Locale'] = language
-            else:
-                vnp.requestData['vnp_Locale'] = 'vn'
-                # Check bank_code, if bank_code is empty, customer will be selected bank on VNPAY
-            if bank_code and bank_code != "":
-                vnp.requestData['vnp_BankCode'] = bank_code
 
-            vnp.requestData['vnp_CreateDate'] = datetime.now().strftime('%Y%m%d%H%M%S')  # 20150410063022
-            vnp.requestData['vnp_IpAddr'] = ipaddr
-            vnp.requestData['vnp_ReturnUrl'] = settings.VNPAY_RETURN_URL
-            vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
-            print(vnpay_payment_url)
-            return redirect(vnpay_payment_url)
-        else:
+        if not form.is_valid():
             print("Form input not validate")
+            return
+
+        # Process input data and build url payment
+        order_type = form.cleaned_data['order_type']
+        order_id = form.cleaned_data['order_id']
+        amount = form.cleaned_data['amount']
+        order_desc = form.cleaned_data['order_desc']
+        bank_code = form.cleaned_data['bank_code']
+        language = form.cleaned_data['language']
+        ipaddr = get_client_ip(request)
+        # Build URL Payment
+        vnp = vnpay()
+        vnp.requestData['vnp_Version'] = '2.1.0'
+        vnp.requestData['vnp_Command'] = 'pay'
+        vnp.requestData['vnp_TmnCode'] = settings.VNPAY_TMN_CODE
+        vnp.requestData['vnp_Amount'] = amount * 100
+        vnp.requestData['vnp_CurrCode'] = 'VND'
+        vnp.requestData['vnp_TxnRef'] = order_id
+        vnp.requestData['vnp_OrderInfo'] = order_desc
+        vnp.requestData['vnp_OrderType'] = order_type
+        # Check language, default: vn
+        if language and language != '':
+            vnp.requestData['vnp_Locale'] = language
+        else:
+            vnp.requestData['vnp_Locale'] = 'vn'
+            # Check bank_code, if bank_code is empty, customer will be selected bank on VNPAY
+        if bank_code and bank_code != "":
+            vnp.requestData['vnp_BankCode'] = bank_code
+
+        vnp.requestData['vnp_CreateDate'] = datetime.now().strftime('%Y%m%d%H%M%S')  # 20150410063022
+        vnp.requestData['vnp_IpAddr'] = ipaddr
+        vnp.requestData['vnp_ReturnUrl'] = settings.VNPAY_RETURN_URL
+        vnpay_payment_url = vnp.get_payment_url(settings.VNPAY_PAYMENT_URL, settings.VNPAY_HASH_SECRET_KEY)
+        print(vnpay_payment_url)
+        return redirect(vnpay_payment_url)
     else:
         user_id = request.GET.get('user_id')
         campaign_id = request.GET.get('campaign_id')
@@ -793,6 +830,7 @@ def query(request):
 
     return render(request, "payment/query.html", {"title": "Kiểm tra kết quả giao dịch", "response_json": response_json})
 
+
 def refund(request):
     if request.method == 'GET':
         return render(request, "payment/refund.html", {"title": "Hoàn tiền giao dịch"})
@@ -848,6 +886,7 @@ def refund(request):
         response_json = {"error": f"Request failed with status code: {response.status_code}"}
 
     return render(request, "payment/refund.html", {"title": "Kết quả hoàn tiền giao dịch", "response_json": response_json})
+
 
 def random_camera(request):
     lat = float(request.GET.get('lat'))
