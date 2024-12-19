@@ -1,0 +1,4 @@
+処理区分,今回コースコード,今回アンケートID,今回質問ID,前回コースコード,前回アンケートID,前回質問ID,質問の表示順,グラフモード,グラフタイトルID,グラフタイトル名,軸ラベルID,軸ラベル名
+a,ESCourse01,72,236,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,237,ESCourse02,71,237,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,238,ESCourse02,71,238,13,1,602,Graph Title 602,101,Axis X

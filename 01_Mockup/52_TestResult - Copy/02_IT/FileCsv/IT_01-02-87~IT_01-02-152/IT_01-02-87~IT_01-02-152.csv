@@ -1,0 +1,67 @@
+処理区分,今回コースコード,今回アンケートID,今回質問ID,前回コースコード,前回アンケートID,前回質問ID,質問の表示順,グラフモード,グラフタイトルID,グラフタイトル名,軸ラベルID,軸ラベル名
+,ESCourse01,72,233,ESCourse01,71,236,13,1,602,Graph Title 602,101,Axis X
+t,ESCourse01,72,233,ESCourse01,71,236,13,1,602,Graph Title 602,101,Axis X
+a,,72,233,ESCourse01,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,,233,ESCourse01,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,,ESCourse01,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,1,,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,1,602,,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,1,602,Graph Title 602,,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,1,602,Graph Title 602,101,
+a,ESCourse01,72,233,ESCourse01,71,236,13,1,602,Graph Title 602,101
+a,TTTTTT,72,233,ESCourse01,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,0000,233,ESCourse01,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,0000,ESCourse01,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,TTTTTT,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,0000,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,0000,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,80,233,ESCourse01,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,80,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCCourse010101010101,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72000000000,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,23300000000,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse0202020202020,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71000000000,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,23600000000,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13000,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,2,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,1,60200000000,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,1,602,Graph Title 602 abcdefghijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcd,101,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,1,602,Graph Title 602,10100000000,Axis X
+a,ESCourse01,72,233,ESCourse01,71,236,13,1,602,Graph Title 602,101,axis Title 602 abcdefghijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcde
+m,,72,233,ESCourse02,71,237,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,,233,ESCourse02,71,237,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,,ESCourse02,71,237,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,,71,237,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse02,,237,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse02,71,237,13,1,602,Graph Title 602,101
+m,XXXXX,11111,11111,YYYYY,22222,236,13,1,602,Graph Title 602,101,Axis X
+m,ESCCourse010101010101,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72000000000,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,23300000000,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse0202020202020,71,236,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse02,71000000000,236,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse02,71,23600000000,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse02,71,236,13000,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse02,71,236,13,2,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse02,71,236,13,1,60200000000,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse02,71,236,13,1,602,Graph Title 602 abcdefghijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcd,101,Axis X
+m,ESCourse01,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,10100000000,Axis X
+m,ESCourse01,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,axis Title 602 abcdefghijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcde
+d,,72,233,ESCourse02,71,237,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,,233,ESCourse02,71,237,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,72,,ESCourse02,71,237,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,72,233,,71,237,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,72,233,ESCourse02,,237,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,72,233,ESCourse02,71,237,13,1,602,Graph Title 602,101
+d,XXXXX,11111,11111,YYYYY,22222,236,13,1,602,Graph Title 602,101,Axis X
+d,ESCCourse010101010101,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,72000000000,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,72,23300000000,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,72,233,ESCourse0202020202020,71,236,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,72,233,ESCourse02,71000000000,236,13,1,602,Graph Title 602,101,Axis X

@@ -1,0 +1,29 @@
+処理区分,今回コースコード,今回アンケートID,今回質問ID,前回コースコード,前回アンケートID,前回質問ID,質問の表示順,グラフモード,グラフタイトルID,グラフタイトル名,軸ラベルID,軸ラベル名
+a,ESCourse01,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse05,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,999,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,999,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse05,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse02,999,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse02,71,999,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse04,999,999,ESCourse05,999,999,13,1,602,Graph Title 602,101,Axis X,a,
+a,ESCourse01,80,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse02,80,236,13,1,602,Graph Title 602,101,Axis X
+a,coE01,95,281,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,coE01,96,281,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse02,71,237,,,,,,
+m,ESCourse01,72,233,ESCourse02,71,237,,,,,,
+m,ESCourse04,72,233,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+m,ESCourse01,72,233,ESCourse04,71,236,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,72,233,ESCourse02,71,237,13,1,602,Graph Title 602,101,Axis X
+d,ESCourse01,73,233,ESCourse02,71,237,13,1,602,Graph Title 602,101,Axis X
+abc,ESCourse01,72,233,ESCourse03,73,237,13,1,602,Graph Title 602,101,Axis X
+a,IT0101,118,327,IT0101,119,327,13,1,602,Graph Title 602,101,Axis X
+m,C001,107,308,C001,108,309,13,1,603,Graph Title 603,101,Axis X
+m,ESCourse01,72,233,C001,108,309,13,1,603,Graph Title 603,101,Axis X
+m,C001,107,308,ESCourse02,71,236,13,1,603,Graph Title 603,101,Axis X
+d,C001,107,308,C001,108,309,13,1,603,Graph Title 602,101,Axis X
+d,ESCourse01,72,233,PCC01,103,298,13,1,602,Graph Title 602,101,Axis X
+d,PCC01,104,298,ESCourse02,71,236,13,1,602,Graph Title 602,101,Axis X
+a,ESCourse01,72,233,ESCourse02,71,236,13,1,602,Graph Title 602 abcdefghijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcdefjhijklmnopqrstuvwxyz abcd,101,Axis X

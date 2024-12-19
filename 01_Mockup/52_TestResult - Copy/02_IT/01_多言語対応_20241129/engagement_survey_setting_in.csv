@@ -1,0 +1,5 @@
+"Kode Kursus Saat Ini","ID Survei Saat Ini","ID Pertanyaan Saat Ini","Kode Kursus Sebelumnya","ID Survei Sebelumnya","ID Pertanyaan Sebelumnya","Urutan tampilan pertanyaan","Mode grafik","ID judul grafik","Nama judul grafik","ID label sumbu","Nama label sumbu"
+"PCC01","104","298","ESCourse02","72","236","13","1","602","Graph Title 602","103","Axis Z"
+"PCC01","104","296","PCC01","103","296","13","1","602","Graph Title 602","101","Axis X"
+"PCC01","104","297","PCC01","103","297","13","1","602","Graph Title 602","102","Axis Y"
+"PCC01","104","298","PCC01","103","298","13","1","602","Graph Title 602","103","Axis Z"

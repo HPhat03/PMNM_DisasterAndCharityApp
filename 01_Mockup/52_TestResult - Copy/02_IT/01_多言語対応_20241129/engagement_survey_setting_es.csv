@@ -1,0 +1,5 @@
+"Código del curso actual","Id. de encuesta actual","Identificador de pregunta actual","Código del curso anterior","Id. de encuesta anterior","Identificador de pregunta anterior","Orden de visualización de respuestas","Modo de gráfico","Id. del título del gráfico","Nombre del título del gráfico","Id. de la etiqueta del eje","Nombre de la etiqueta del eje"
+"PCC01","104","298","ESCourse02","72","236","13","1","602","Graph Title 602","103","Axis Z"
+"PCC01","104","296","PCC01","103","296","13","1","602","Graph Title 602","101","Axis X"
+"PCC01","104","297","PCC01","103","297","13","1","602","Graph Title 602","102","Axis Y"
+"PCC01","104","298","PCC01","103","298","13","1","602","Graph Title 602","103","Axis Z"

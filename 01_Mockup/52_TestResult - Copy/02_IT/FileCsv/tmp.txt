@@ -1,0 +1,47 @@
+CREATE DEFINER=`cafeadmin`@`%` PROCEDURE `addStepRecordOfEnqueteReport`(in  step INT)
+BEGIN
+DECLARE counter INT default 0;
+DECLARE current_id varchar(14) default (SELECT max(apply_receipt_no) FROM nextcafe.apply_info WHERE apply_receipt_no LIKE 'K24111500%');
+-- SELECT current_id;
+WHILE counter < step DO
+    SET @idx = substr(current_id, 2) + 1;
+    SET current_id = concat(substr(current_id, 1, 1), @idx);
+    
+    INSERT INTO `apply_info` (`apply_receipt_no`, `st_history_div`, `course_publisher_company_code`, `course_code`, `fixed_start_date`, `fixed_end_date`, `apply_company_code`, `apply_status_div`, `status_update_datetime`, `apply_datetime`, `cancel_request_flag`, `scheduleupdate_request_flag`, `surrogate_request_flag`, `external_approv_flag`, `cart_no`, `cart_course_regist_no`, `cart_st_regist_no`, `instant_learning_start_day`, `apply_circulation`, `apply_user_code`, `st_user_code`, `regist_company_code`, `regist_user_code`, `regist_datetime`, `last_update_company_code`, `last_update_user_code`, `last_update_datetime`) 
+    VALUES (current_id, '1', 'FLM9T', 'PCC01', '2024-11-15', '2025-02-23', 'FLM9T', '3', '2024-11-25 03:06:13', '2024-11-15 06:09:25', '0', '0', '0', '1', '1610', '1', '1', '0', '1', 'FLMsystem', 'FLMsystem', 'FLM9T', 'FLMsystem', NOW(), 'FLM9T', 'FLMsystem', NOW());
+
+	INSERT INTO `apply_history_info` (`apply_receipt_no`, `learning_form_div`, `learning_form_name`, `instant_flag`, `instant_open_term`, `schedule_need_flag`, `blend_child_flag`, `sub_e-learning_flag`, `publisher_company_name`, `course_name`, `base_fee`, `fee_currency_div`, `base_fee_item_name`, `e-learning_content_id`, `regist_company_code`, `regist_user_code`, `regist_datetime`, `last_update_company_code`, `last_update_user_code`, `last_update_datetime`) 
+	VALUES (current_id, '11', 'eラーニング', '1', '100', '0', '0', '0', 'FLM9T', 'TestEngagementSurvey', '10.00', '1', '価格', '298', 'FLM9T', 'FLMsystem', '2024-11-15 15:09:26', 'FLM9T', 'FLMsystem', '2024-11-15 15:09:26');
+
+    INSERT INTO `wm_qti_enquete_result` (`enquete_id`, `apply_id`, `time_id`, `user_company_code`, `user_code`, `begin_datetime`, `submit_datetime`, `enquete_status`) 
+    VALUES ('103', current_id, '1', 'FLM9T', 'FLMsystem', NOW(), NOW(), '1');
+	INSERT INTO `wm_qti_enquete_result` (`enquete_id`, `apply_id`, `time_id`, `user_company_code`, `user_code`, `begin_datetime`, `submit_datetime`, `enquete_status`) 
+    VALUES ('104', current_id, '1', 'FLM9T', 'FLMsystem', NOW(), NOW(), '1');
+
+    SET @tmp = CAST(RAND()*5 AS UNSIGNED);
+    INSERT INTO zz_temp(id) VALUE (@tmp);
+	INSERT INTO `wm_qti_enquete_a_to_i` (`enquete_id`, `apply_id`, `item_id`, `time_id`, `user_company_code`, `user_code`, `response`) VALUES ('103', current_id, '296', '1', 'FLM9T', 'FLMsystem', concat('\"',@tmp,'\"'));
+	
+    SET @tmp = CAST(RAND()*4 AS UNSIGNED);
+    INSERT INTO zz_temp(id) VALUE (@tmp);
+    INSERT INTO `wm_qti_enquete_a_to_i` (`enquete_id`, `apply_id`, `item_id`, `time_id`, `user_company_code`, `user_code`, `response`) VALUES ('103', current_id, '297', '1', 'FLM9T', 'FLMsystem', concat('\"',@tmp,'\"'));
+    
+	SET @tmp = CAST(RAND()*4 AS UNSIGNED);
+    INSERT INTO zz_temp(id) VALUE (@tmp);
+    INSERT INTO `wm_qti_enquete_a_to_i` (`enquete_id`, `apply_id`, `item_id`, `time_id`, `user_company_code`, `user_code`, `response`) VALUES ('103', current_id, '298', '1', 'FLM9T', 'FLMsystem', concat('\"',@tmp,'\"'));
+	
+    SET @tmp = CAST(RAND()*4 AS UNSIGNED);
+    INSERT INTO zz_temp(id) VALUE (@tmp);
+    INSERT INTO `wm_qti_enquete_a_to_i` (`enquete_id`, `apply_id`, `item_id`, `time_id`, `user_company_code`, `user_code`, `response`) VALUES ('104', current_id, '296', '1', 'FLM9T', 'FLMsystem', concat('\"',@tmp,'\"'));
+	
+    SET @tmp = CAST(RAND()*4 AS UNSIGNED);
+    INSERT INTO zz_temp(id) VALUE (@tmp);
+    INSERT INTO `wm_qti_enquete_a_to_i` (`enquete_id`, `apply_id`, `item_id`, `time_id`, `user_company_code`, `user_code`, `response`) VALUES ('104', current_id, '297', '1', 'FLM9T', 'FLMsystem', concat('\"',@tmp,'\"'));
+	
+    SET @tmp = CAST(RAND()*4 AS UNSIGNED);
+    INSERT INTO zz_temp(id) VALUE (@tmp);
+    INSERT INTO `wm_qti_enquete_a_to_i` (`enquete_id`, `apply_id`, `item_id`, `time_id`, `user_company_code`, `user_code`, `response`) VALUES ('104', current_id, '298', '1', 'FLM9T', 'FLMsystem', concat('\"',@tmp,'\"'));
+    
+	SET counter = counter + 1;
+END WHILE;
+END
