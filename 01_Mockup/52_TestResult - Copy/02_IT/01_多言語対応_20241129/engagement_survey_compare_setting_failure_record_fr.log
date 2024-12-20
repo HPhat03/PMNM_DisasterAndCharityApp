@@ -1,7 +1,0 @@
-"処理区分","今回コースコード","今回アンケートID","今回質問ID","前回コースコード","前回アンケートID","前回質問ID","質問の表示順","グラフモード","グラフタイトルID","グラフタイトル名","軸ラベルID","軸ラベル名"
-"a","PCC01","104","296","PCC01","103","296","13","1","602","Graph Title 602","101","Axis X","Le Param�tres de l'enqu�te de mission saisi existe d�j�."
-"a","PCC01","104","297","PCC01","103","297","13","1","602","Graph Title 602","102","Axis Y","Le Param�tres de l'enqu�te de mission saisi existe d�j�."
-"a","PCC01","104","298","PCC01","103","298","13","1","602","Graph Title 602","103","Axis Z","Le Param�tres de l'enqu�te de mission saisi existe d�j�."
-"m","PCC01","104","296","PCC01","103","296","13","1","603","New Graph Title 603","101","Axis X2","Il n'y a pas de privil�ges pour l'op�ration sur le cours s�lectionn�."
-"m","PCC01","104","297","PCC01","103","297","13","1","603","New Graph Title 603","102","Axis Y2","Il n'y a pas de privil�ges pour l'op�ration sur le cours s�lectionn�."
-"m","PCC01","104","298","PCC01","103","298","13","1","603","New Graph Title 603","103","Axis Z2","Il n'y a pas de privil�ges pour l'op�ration sur le cours s�lectionn�."
